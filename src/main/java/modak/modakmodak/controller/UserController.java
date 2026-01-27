@@ -89,4 +89,27 @@ public class UserController {
             return ResponseEntity.status(404).body("사용자를 찾을 수 없습니다.");
         }
     }
+
+    @PostMapping("/withdraw")
+    public ResponseEntity<String> withdraw(@RequestBody Map<String, String> request) {
+        String username = request.get("username");
+        String password = request.get("password");
+
+        Optional<User> user = userRepository.findByUsername(username);
+
+        // 1. 사용자가 존재하는지 확인
+        if (user.isPresent()) {
+            User foundUser = user.get();
+
+            // 2. 비밀번호가 일치하는지 확인 (본인 확인)
+            if (foundUser.getPassword().equals(password)) {
+                userRepository.delete(foundUser); // DB에서 해당 데이터 삭제
+                return ResponseEntity.ok("회원 탈퇴가 완료되었습니다. 그동안 이용해 주셔서 감사합니다.");
+            } else {
+                return ResponseEntity.status(401).body("비밀번호가 일치하지 않아 탈퇴할 수 없습니다.");
+            }
+        } else {
+            return ResponseEntity.status(404).body("사용자를 찾을 수 없습니다.");
+        }
+    }
 }
