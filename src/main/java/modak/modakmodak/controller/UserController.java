@@ -3,6 +3,7 @@ package modak.modakmodak.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import modak.modakmodak.dto.UserJoinRequest;
 import modak.modakmodak.entity.User;
 import modak.modakmodak.repository.UserRepository;
 import modak.modakmodak.service.UserService;
@@ -23,12 +24,25 @@ public class UserController {
     private final UserRepository userRepository;
 
     // 1. 회원가입
+    // 1. 회원가입 (UserController.java 내부)
     @Operation(summary = "회원가입", description = "새로운 유저 정보를 DB에 저장합니다.")
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody User user) {
-        if(userRepository.findByUsername(user.getUsername()).isPresent()) {
+    public ResponseEntity<String> signup(@RequestBody UserJoinRequest request) { // ◀ User 대신 UserJoinRequest 사용
+
+        // 아이디 중복 체크
+        if(userRepository.findByUsername(request.username()).isPresent()) {
             return ResponseEntity.badRequest().body("이미 사용 중인 아이디입니다.");
         }
+
+        // DTO 데이터를 엔티티로 변환하여 저장
+        User user = User.builder()
+                .username(request.username())
+                .password(request.password())
+                .email(request.email())
+                .nickname(request.nickname())
+                .attendanceRate(0) // 초기값 설정
+                .build();
+
         userRepository.save(user);
         return ResponseEntity.ok("회원가입 성공!");
     }
