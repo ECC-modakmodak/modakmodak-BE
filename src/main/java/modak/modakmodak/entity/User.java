@@ -6,7 +6,7 @@ import lombok.*;
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 @Table(name = "users")
@@ -28,7 +28,11 @@ public class User {
     private String profileImage;
     private String preferredType; //
     private String activityArea;
+
+    @Builder.Default
     private float attendanceRate = 0;
+
+    private String statusMessage;
 
     // 회원가입 전용 생성자
     public User(String username, String password, String email, String nickname) {

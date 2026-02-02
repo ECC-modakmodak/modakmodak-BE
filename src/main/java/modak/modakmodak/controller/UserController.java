@@ -1,34 +1,54 @@
 package modak.modakmodak.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import modak.modakmodak.dto.UserJoinRequest;
 import modak.modakmodak.entity.User;
 import modak.modakmodak.repository.UserRepository;
+import modak.modakmodak.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Optional;
 
+@Tag(name = "User", description = "회원 관련 API (DB 연동)")
 @RestController
 @RequestMapping("/api/users")
+@RequiredArgsConstructor
+
 public class UserController {
 
+    private final UserService userService;
     private final UserRepository userRepository;
 
-    public UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
     // 1. 회원가입
+    // 1. 회원가입 (UserController.java 내부)
+    @Operation(summary = "회원가입", description = "새로운 유저 정보를 DB에 저장합니다.")
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody User user) {
-        if(userRepository.findByUsername(user.getUsername()).isPresent()) {
+    public ResponseEntity<String> signup(@RequestBody UserJoinRequest request) { // ◀ User 대신 UserJoinRequest 사용
+
+        // 아이디 중복 체크
+        if(userRepository.findByUsername(request.username()).isPresent()) {
             return ResponseEntity.badRequest().body("이미 사용 중인 아이디입니다.");
         }
+
+        // DTO 데이터를 엔티티로 변환하여 저장
+        User user = User.builder()
+                .username(request.username())
+                .password(request.password())
+                .email(request.email())
+                .nickname(request.nickname())
+                .attendanceRate(0) // 초기값 설정
+                .build();
+
         userRepository.save(user);
         return ResponseEntity.ok("회원가입 성공!");
     }
 
     // 2. 로그인
+    @Operation(summary = "로그인", description = "아이디와 비밀번호를 DB 데이터와 대조합니다.")
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody Map<String, String> request) {
         Optional<User> user = userRepository.findByUsername(request.get("username"));
@@ -39,6 +59,7 @@ public class UserController {
     }
 
     // 3. 아이디 찾기 (이메일로 조회)
+    @Operation(summary = "아이디 찾기", description = "이메일로 가입된 유저의 아이디를 찾습니다.")
     @PostMapping("/find-id")
     public ResponseEntity<String> findId(@RequestBody Map<String, String> request) {
         Optional<User> user = userRepository.findByEmail(request.get("email"));
@@ -46,6 +67,8 @@ public class UserController {
                 .orElse(ResponseEntity.status(404).body("해당 이메일로 가입된 정보가 없습니다."));
     }
 
+    //4. 임시 비밀번호 발급
+    @Operation(summary = "비밀번호 찾기", description = "임시 비밀번호를 생성하여 DB를 업데이트합니다.")
     @PostMapping("/find-pw")
     public ResponseEntity<String> findPassword(@RequestBody Map<String, String> request) {
         String username = request.get("username");
@@ -65,6 +88,8 @@ public class UserController {
         }
     }
 
+    //5. 비밀번호 재설정
+    @Operation(summary = "비밀번호 변경", description = "새로운 비밀번호를 DB에 저장합니다.")
     @PostMapping("/reset-pw")
     public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> request) {
         String username = request.get("username");
@@ -90,6 +115,8 @@ public class UserController {
         }
     }
 
+    //6. 회원 탈퇴
+    @Operation(summary = "회원 탈퇴", description = "사용자 데이터를 DB에서 영구 삭제합니다.")
     @PostMapping("/withdraw")
     public ResponseEntity<String> withdraw(@RequestBody Map<String, String> request) {
         String username = request.get("username");
@@ -111,5 +138,6 @@ public class UserController {
         } else {
             return ResponseEntity.status(404).body("사용자를 찾을 수 없습니다.");
         }
+
     }
 }
