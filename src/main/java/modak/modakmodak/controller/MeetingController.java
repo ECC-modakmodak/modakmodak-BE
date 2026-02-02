@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import modak.modakmodak.dto.MeetingDetailRequest;
 import modak.modakmodak.dto.MeetingSetupRequest;
+import modak.modakmodak.dto.MeetingDetailResponse;
 import modak.modakmodak.meeting.MeetingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,5 +30,15 @@ public class MeetingController {
             @RequestBody MeetingDetailRequest request) {
         meetingService.completeMeeting(meetingId, request);
         return ResponseEntity.ok("모임 개설이 완료되었습니다!");
+    }
+
+    @Operation(summary = "모임 상세 조회", description = "특정 모임의 상세 정보와 참여자 목록을 조회합니다.")
+    @GetMapping("/{meetingId}")
+    public ResponseEntity<MeetingDetailResponse> getMeetingDetail(@PathVariable Long meetingId) {
+        // 1. 서비스의 getMeetingDetail 메서드를 호출해서 DB의 진짜 데이터를 받아옵니다.
+        MeetingDetailResponse.MeetingData data = meetingService.getMeetingDetail(meetingId);
+
+        // 2. null 대신 실제 data를 담아서 보냅니다.
+        return ResponseEntity.ok(new MeetingDetailResponse(200, "모임 상세 조회 성공", data));
     }
 }
