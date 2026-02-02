@@ -9,6 +9,8 @@ import modak.modakmodak.repository.UserRepository;
 import modak.modakmodak.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import modak.modakmodak.dto.UserProfileRequest;
+
 
 import java.util.Map;
 import java.util.Optional;
@@ -30,7 +32,7 @@ public class UserController {
     public ResponseEntity<String> signup(@RequestBody UserJoinRequest request) { // ◀ User 대신 UserJoinRequest 사용
 
         // 아이디 중복 체크
-        if(userRepository.findByUsername(request.username()).isPresent()) {
+        if (userRepository.findByUsername(request.username()).isPresent()) {
             return ResponseEntity.badRequest().body("이미 사용 중인 아이디입니다.");
         }
 
@@ -139,5 +141,65 @@ public class UserController {
             return ResponseEntity.status(404).body("사용자를 찾을 수 없습니다.");
         }
 
+    }
+
+    @Operation(summary = "프로필 수정", description = "사용자의 닉네임, 이미지, 메시지 등을 변경합니다.")
+    @PatchMapping("/profile/{userId}") // ◀ 일부 정보만 수정할 때는 PATCH를 주로 씁니다.
+    public ResponseEntity<Map<String, Object>> updateProfile(
+            @PathVariable String userId,
+            @RequestBody UserProfileRequest request) {
+
+        Optional<User> userOptional = userRepository.findByUsername(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.updateProfile(request); // ◀ 엔티티의 업데이트 메서드 호출
+            userRepository.save(user);   // ◀ DB 저장
+
+            return ResponseEntity.ok(Map.of(
+                    "status", 200,
+                    "message", "프로필 정보가 성공적으로 변경되었습니다."
+            ));
+        } else {
+            return ResponseEntity.status(404).body(Map.of(
+                    "status", 404,
+                    "message", "사용자를 찾을 수 없습니다."
+            ));
+        }
+    }
+
+    @Operation(summary = "프로필 조회", description = "사용자의 프로필 정보를 가져옵니다.")
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<Map<String, Object>> getProfile(@PathVariable String userId) {
+
+        // 1. DB에서 사용자 아이디로 정보를 찾습니다.
+        Optional<User> userOptional = userRepository.findByUsername(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            // 2. 시안 명세서에 맞는 보따리(Map)를 만들어 데이터를 채웁니다.
+            Map<String, Object> data = Map.of(
+                    "userId", user.getUsername(),
+                    "nickname", user.getNickname(),
+                    "email", user.getEmail(),
+                    "profileImage", user.getProfileImage() != null ? user.getProfileImage() : "https://...",
+                    "attendanceRate", user.getAttendanceRate(),
+                    "targetMessage", user.getTargetMessage() != null ? user.getTargetMessage() : "",
+                    "preferredType", user.getPreferredType() != null ? user.getPreferredType() : "",
+                    "activityArea", user.getActivityArea() != null ? user.getActivityArea() : ""
+            );
+
+            return ResponseEntity.ok(Map.of(
+                    "status", 200,
+                    "message", "프로필 조회 성공",
+                    "data", data
+            ));
+        } else {
+            return ResponseEntity.status(404).body(Map.of(
+                    "status", 404,
+                    "message", "사용자를 찾을 수 없습니다."
+            ));
+        }
     }
 }
