@@ -30,4 +30,8 @@ public class Participant {
 
     @Enumerated(EnumType.STRING)
     private ParticipationStatus status; // APPROVED, PENDING 등
+
+    public void updateStatus(ParticipationStatus status) {
+        this.status = status;
+    }
 }

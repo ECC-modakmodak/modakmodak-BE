@@ -55,4 +55,13 @@ public class MeetingController {
             @RequestBody modak.modakmodak.dto.MeetingApplicationRequest request) {
         return ResponseEntity.ok(meetingService.applyMeeting(meetingId, request));
     }
+
+    @Operation(summary = "모임 참여 승인/거절", description = "방장이 신청자의 참여 요청을 승인하거나 거절합니다.")
+    @PatchMapping("/{meetingId}/applications/{applicationId}")
+    public ResponseEntity<modak.modakmodak.dto.MeetingApprovalResponse> approveApplication(
+            @PathVariable Long meetingId,
+            @PathVariable Long applicationId,
+            @RequestBody modak.modakmodak.dto.MeetingApprovalRequest request) {
+        return ResponseEntity.ok(meetingService.approveApplication(meetingId, applicationId, request));
+    }
 }

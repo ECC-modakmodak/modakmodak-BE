@@ -134,4 +134,48 @@ public class MeetingService {
                                                 participant.getId(),
                                                 participant.getStatus().name()));
         }
+
+        @Transactional
+        public modak.modakmodak.dto.MeetingApprovalResponse approveApplication(Long meetingId, Long applicationId,
+                        modak.modakmodak.dto.MeetingApprovalRequest request) {
+                // 1. 신청서 조회
+                modak.modakmodak.entity.Participant participant = participantRepository.findById(applicationId)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "존재하지 않는 신청서입니다. ID: " + applicationId));
+
+                // 2. 모임 ID 검증
+                if (!participant.getMeeting().getId().equals(meetingId)) {
+                        throw new IllegalArgumentException("해당 모임의 신청서가 아닙니다.");
+                }
+
+                // 3. 상태 업데이트
+                modak.modakmodak.entity.ParticipationStatus newStatus = modak.modakmodak.entity.ParticipationStatus
+                                .valueOf(request.status());
+                participant.updateStatus(newStatus);
+
+                // 4. APPROVED 인 경우 정원 체크 (신청 시에도 체크하지만, 동시성 문제 등 대비)
+                if (newStatus == modak.modakmodak.entity.ParticipationStatus.APPROVED) {
+                        int currentCount = participantRepository.countByMeetingId(meetingId);
+                        if (currentCount > participant.getMeeting().getMaxParticipants()) {
+                                // 이미 정원 초과라면 다시 롤백하거나 예외 발생
+                                throw new IllegalArgumentException("정원이 초과되어 승인할 수 없습니다.");
+                        }
+                }
+
+                // 5. 변경 사항 저장 (Dirty Checking으로 자동 저장되지만 명시적으로 호출해도 무방)
+                participantRepository.save(participant);
+
+                // 6. 현재 인원 다시 계산
+                int updatedCount = participantRepository.countByMeetingId(meetingId);
+                String nickname = (participant.getUser() != null) ? participant.getUser().getNickname() : "알수없음";
+
+                return new modak.modakmodak.dto.MeetingApprovalResponse(
+                                200,
+                                "신청자 승인 처리가 완료되었습니다.", // 거절일 경우 메시지 처리가 명세에 명확치 않으나, 일단 통일하거나 로직 분기 가능
+                                new modak.modakmodak.dto.MeetingApprovalResponse.ApprovalData(
+                                                participant.getId(),
+                                                nickname,
+                                                participant.getStatus().name(),
+                                                updatedCount));
+        }
 }
