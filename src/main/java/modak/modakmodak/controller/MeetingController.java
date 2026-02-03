@@ -41,4 +41,35 @@ public class MeetingController {
         // 2. null 대신 실제 data를 담아서 보냅니다.
         return ResponseEntity.ok(new MeetingDetailResponse(200, "모임 상세 조회 성공", data));
     }
+
+    @Operation(summary = "모임 목록 조회", description = "메인 화면에서 모임 목록을 조회합니다.")
+    @GetMapping
+    public ResponseEntity<modak.modakmodak.dto.MeetingListResponse> getMeetingList() {
+        return ResponseEntity.ok(meetingService.getMeetingList());
+    }
+
+    @Operation(summary = "모임 참여 신청", description = "특정 모임에 참여를 신청합니다.")
+    @PostMapping("/{meetingId}/application")
+    public ResponseEntity<modak.modakmodak.dto.MeetingApplicationResponse> applyMeeting(
+            @PathVariable Long meetingId,
+            @RequestBody modak.modakmodak.dto.MeetingApplicationRequest request) {
+        return ResponseEntity.ok(meetingService.applyMeeting(meetingId, request));
+    }
+
+    @Operation(summary = "모임 참여 승인/거절", description = "방장이 신청자의 참여 요청을 승인하거나 거절합니다.")
+    @PatchMapping("/{meetingId}/applications/{applicationId}")
+    public ResponseEntity<modak.modakmodak.dto.MeetingApprovalResponse> approveApplication(
+            @PathVariable Long meetingId,
+            @PathVariable Long applicationId,
+            @RequestBody modak.modakmodak.dto.MeetingApprovalRequest request) {
+        return ResponseEntity.ok(meetingService.approveApplication(meetingId, applicationId, request));
+    }
+
+    @Operation(summary = "모임방 상태 업데이트", description = "참여자가 자신의 상태 배지(예: 집중하고 있어요)를 변경합니다.")
+    @PatchMapping("/{meetingId}/status")
+    public ResponseEntity<modak.modakmodak.dto.MeetingStatusUpdateResponse> updateMeetingStatus(
+            @PathVariable Long meetingId,
+            @RequestBody modak.modakmodak.dto.MeetingStatusUpdateRequest request) {
+        return ResponseEntity.ok(meetingService.updateMeetingStatus(meetingId, request));
+    }
 }
