@@ -47,4 +47,12 @@ public class MeetingController {
     public ResponseEntity<modak.modakmodak.dto.MeetingListResponse> getMeetingList() {
         return ResponseEntity.ok(meetingService.getMeetingList());
     }
+
+    @Operation(summary = "모임 참여 신청", description = "특정 모임에 참여를 신청합니다.")
+    @PostMapping("/{meetingId}/application")
+    public ResponseEntity<modak.modakmodak.dto.MeetingApplicationResponse> applyMeeting(
+            @PathVariable Long meetingId,
+            @RequestBody modak.modakmodak.dto.MeetingApplicationRequest request) {
+        return ResponseEntity.ok(meetingService.applyMeeting(meetingId, request));
+    }
 }

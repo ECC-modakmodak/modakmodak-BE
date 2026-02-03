@@ -13,4 +13,7 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
 
     // 모임 참여 인원 수
     int countByMeetingId(Long meetingId);
+
+    // 중복 신청 여부 확인
+    boolean existsByMeetingIdAndUserId(Long meetingId, Long userId);
 }
