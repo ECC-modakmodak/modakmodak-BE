@@ -178,4 +178,29 @@ public class MeetingService {
                                                 participant.getStatus().name(),
                                                 updatedCount));
         }
+
+        @Transactional
+        public modak.modakmodak.dto.MeetingStatusUpdateResponse updateMeetingStatus(Long meetingId,
+                        modak.modakmodak.dto.MeetingStatusUpdateRequest request) {
+                // 1. 임시 유저 (ID: 1)
+                Long userId = 1L;
+
+                // 2. 해당 모임의 내 참여 정보 조회
+                modak.modakmodak.entity.Participant participant = participantRepository.findByMeetingId(meetingId)
+                                .stream()
+                                .filter(p -> p.getUser().getId().equals(userId))
+                                .findFirst()
+                                .orElseThrow(() -> new IllegalArgumentException("해당 모임에 참여하고 있지 않습니다."));
+
+                // 3. 상태 배지 업데이트
+                participant.updateStatusBadge(request.statusBadge());
+                // participantRepository.save(participant); // Dirty Checking
+
+                return new modak.modakmodak.dto.MeetingStatusUpdateResponse(
+                                200,
+                                "상태 업데이트 성공",
+                                new modak.modakmodak.dto.MeetingStatusUpdateResponse.StatusData(
+                                                participant.getId(),
+                                                participant.getStatusBadge()));
+        }
 }

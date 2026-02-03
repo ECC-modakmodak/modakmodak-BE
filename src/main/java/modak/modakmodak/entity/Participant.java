@@ -34,4 +34,10 @@ public class Participant {
     public void updateStatus(ParticipationStatus status) {
         this.status = status;
     }
+
+    private String statusBadge; // "집중하고 있어요", "도착했어요" 등 상태 메시지
+
+    public void updateStatusBadge(String statusBadge) {
+        this.statusBadge = statusBadge;
+    }
 }
