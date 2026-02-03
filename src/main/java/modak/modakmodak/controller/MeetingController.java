@@ -41,4 +41,10 @@ public class MeetingController {
         // 2. null 대신 실제 data를 담아서 보냅니다.
         return ResponseEntity.ok(new MeetingDetailResponse(200, "모임 상세 조회 성공", data));
     }
+
+    @Operation(summary = "모임 목록 조회", description = "메인 화면에서 모임 목록을 조회합니다.")
+    @GetMapping
+    public ResponseEntity<modak.modakmodak.dto.MeetingListResponse> getMeetingList() {
+        return ResponseEntity.ok(meetingService.getMeetingList());
+    }
 }
