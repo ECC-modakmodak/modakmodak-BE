@@ -19,24 +19,29 @@ public class MeetingController {
 
     @Operation(summary = "모임 초기 성격 설정", description = "1단계: 분위기, 카테고리, 인원을 설정합니다.")
     @PostMapping("/setup")
-    public ResponseEntity<Long> setup(@RequestBody MeetingSetupRequest request) {
-        return ResponseEntity.ok(meetingService.setupMeeting(request));
+    public ResponseEntity<Long> setup(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+            @RequestBody MeetingSetupRequest request) {
+        return ResponseEntity.ok(meetingService.setupMeeting(userId, request));
     }
 
     @Operation(summary = "모임 세부 설정 및 개설", description = "2단계: 상세 정보를 입력하여 모임을 개설합니다.")
     @PostMapping("/{meetingId}/details")
     public ResponseEntity<String> complete(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
             @PathVariable Long meetingId,
             @RequestBody MeetingDetailRequest request) {
-        meetingService.completeMeeting(meetingId, request);
+        meetingService.completeMeeting(userId, meetingId, request);
         return ResponseEntity.ok("모임 개설이 완료되었습니다!");
     }
 
     @Operation(summary = "모임 상세 조회", description = "특정 모임의 상세 정보와 참여자 목록을 조회합니다.")
     @GetMapping("/{meetingId}")
-    public ResponseEntity<MeetingDetailResponse> getMeetingDetail(@PathVariable Long meetingId) {
+    public ResponseEntity<MeetingDetailResponse> getMeetingDetail(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+            @PathVariable Long meetingId) {
         // 1. 서비스의 getMeetingDetail 메서드를 호출해서 DB의 진짜 데이터를 받아옵니다.
-        MeetingDetailResponse.MeetingData data = meetingService.getMeetingDetail(meetingId);
+        MeetingDetailResponse.MeetingData data = meetingService.getMeetingDetail(userId, meetingId);
 
         // 2. null 대신 실제 data를 담아서 보냅니다.
         return ResponseEntity.ok(new MeetingDetailResponse(200, "모임 상세 조회 성공", data));
@@ -49,27 +54,30 @@ public class MeetingController {
     }
 
     @Operation(summary = "모임 참여 신청", description = "특정 모임에 참여를 신청합니다.")
-    @PostMapping("/{meetingId}/application")
+    @PostMapping("/{meetingId}/apply")
     public ResponseEntity<modak.modakmodak.dto.MeetingApplicationResponse> applyMeeting(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
             @PathVariable Long meetingId,
             @RequestBody modak.modakmodak.dto.MeetingApplicationRequest request) {
-        return ResponseEntity.ok(meetingService.applyMeeting(meetingId, request));
+        return ResponseEntity.ok(meetingService.applyMeeting(userId, meetingId, request));
     }
 
     @Operation(summary = "모임 참여 승인/거절", description = "방장이 신청자의 참여 요청을 승인하거나 거절합니다.")
-    @PatchMapping("/{meetingId}/applications/{applicationId}")
+    @PatchMapping("/{meetingId}/approve/{applicationId}")
     public ResponseEntity<modak.modakmodak.dto.MeetingApprovalResponse> approveApplication(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
             @PathVariable Long meetingId,
             @PathVariable Long applicationId,
             @RequestBody modak.modakmodak.dto.MeetingApprovalRequest request) {
-        return ResponseEntity.ok(meetingService.approveApplication(meetingId, applicationId, request));
+        return ResponseEntity.ok(meetingService.approveApplication(userId, meetingId, applicationId, request));
     }
 
     @Operation(summary = "모임방 상태 업데이트", description = "참여자가 자신의 상태 배지(예: 집중하고 있어요)를 변경합니다.")
     @PatchMapping("/{meetingId}/status")
     public ResponseEntity<modak.modakmodak.dto.MeetingStatusUpdateResponse> updateMeetingStatus(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
             @PathVariable Long meetingId,
             @RequestBody modak.modakmodak.dto.MeetingStatusUpdateRequest request) {
-        return ResponseEntity.ok(meetingService.updateMeetingStatus(meetingId, request));
+        return ResponseEntity.ok(meetingService.updateMeetingStatus(userId, meetingId, request));
     }
 }
