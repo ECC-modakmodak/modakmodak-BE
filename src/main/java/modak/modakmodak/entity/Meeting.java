@@ -14,8 +14,13 @@ public class Meeting {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String atmosphere; // 모임 성격
-    private String category;   // 카테고리
+    @Enumerated(EnumType.STRING)
+    private MeetingAtmosphere atmosphere; // 도란도란, 조용한
+
+    @Enumerated(EnumType.STRING)
+    private MeetingCategory category; // 카공, 줌공, 기타
+    private String categoryEtc; // 기타
+
     private int maxParticipants;
 
     private String title;

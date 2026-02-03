@@ -17,15 +17,17 @@ public class MeetingService {
         private final modak.modakmodak.repository.ParticipantRepository participantRepository;
         private final modak.modakmodak.repository.UserRepository userRepository;
 
-        public Long setupMeeting(MeetingSetupRequest request) {
-                Meeting meeting = Meeting.builder()
-                                .atmosphere(request.atmosphere())
-                                .category(request.category())
-                                .maxParticipants(request.maxParticipants())
-                                .status("PENDING")
-                                .build();
-                return meetingRepository.save(meeting).getId();
-        }
+
+    public Long setupMeeting(MeetingSetupRequest request) {
+        Meeting meeting = Meeting.builder()
+                .atmosphere(request.atmosphere()) // Enum으로 바로 저장
+                .category(request.category())     // Enum으로 바로 저장
+                .categoryEtc(request.categoryEtc()) // "기타" 내용 저장
+                .maxParticipants(request.maxParticipants())
+                .status("PENDING")
+                .build();
+        return meetingRepository.save(meeting).getId();
+    }
 
         public void completeMeeting(Long meetingId, MeetingDetailRequest request) {
                 Meeting meeting = meetingRepository.findById(meetingId)
@@ -47,8 +49,7 @@ public class MeetingService {
                                 meeting.getArea(), // DB의 진짜 지역
                                 meeting.getLocationDetail(), // DB의 진짜 장소
                                 meeting.getDate() != null ? meeting.getDate().toString() : null, // 날짜 형식 변환
-                                List.of(meeting.getAtmosphere(), meeting.getCategory()), // 생성 시 넣은 성격/카테고리를 해시태그처럼 사용
-                                "방장이 등록한 공지사항이 이곳에 표시됩니다.", // 아직 DB 필드가 없다면 우선 가짜 텍스트
+                                List.of(meeting.getAtmosphere().name(), meeting.getCategory().name()),                                "방장이 등록한 공지사항이 이곳에 표시됩니다.", // 아직 DB 필드가 없다면 우선 가짜 텍스트
                                 null, // 참여자 목록 (추후 조인 조회로 구현)
                                 null // 내 상태 정보 (추후 세션/토큰 정보로 구현)
                 );
@@ -72,7 +73,8 @@ public class MeetingService {
                                         count,
                                         meeting.getMaxParticipants(),
                                         meeting.getDate() != null ? meeting.getDate().toString() : "",
-                                        List.of(meeting.getAtmosphere(), meeting.getCategory()));
+                                        List.of(meeting.getAtmosphere().name(), meeting.getCategory().name())
+                        );
                 }).toList();
 
                 // 오늘의 팟 (임시로 첫 번째 모임 사용, 없으면 null)
