@@ -6,6 +6,10 @@ import modak.modakmodak.dto.MeetingSetupRequest;
 import modak.modakmodak.entity.Meeting;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import modak.modakmodak.entity.MeetingAtmosphere;
+import modak.modakmodak.entity.MeetingCategory;
+
+
 
 @Service
 @RequiredArgsConstructor
@@ -15,8 +19,9 @@ public class MeetingService {
 
     public Long setupMeeting(MeetingSetupRequest request) {
         Meeting meeting = Meeting.builder()
-                .atmosphere(request.atmosphere())
-                .category(request.category())
+                .atmosphere(request.atmosphere()) // Enum으로 바로 저장
+                .category(request.category())     // Enum으로 바로 저장
+                .categoryEtc(request.categoryEtc()) // "기타" 내용 저장
                 .maxParticipants(request.maxParticipants())
                 .status("PENDING")
                 .build();
