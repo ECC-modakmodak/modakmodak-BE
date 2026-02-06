@@ -9,5 +9,6 @@ public record MeetingDto(
         int currentParticipants,
         int maxParticipants,
         String date,
+        String createdAt,
         List<String> hashtags) {
 }

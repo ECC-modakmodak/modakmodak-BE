@@ -21,7 +21,7 @@ public class Meeting {
     @Column(updatable = false) // 생성 후에는 수정되지 않도록 설정
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
-    
+
     @Enumerated(EnumType.STRING)
     private MeetingAtmosphere atmosphere; // 도란도란, 조용한
 
