@@ -19,8 +19,9 @@ public class Meeting {
 
     @CreatedDate // 생성 시 자동으로 시간이 저장됩니다.
     @Column(updatable = false) // 생성 후에는 수정되지 않도록 설정
-    private LocalDateTime createdAt;
-
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+    
     @Enumerated(EnumType.STRING)
     private MeetingAtmosphere atmosphere; // 도란도란, 조용한
 
