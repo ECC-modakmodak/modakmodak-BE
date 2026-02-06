@@ -4,15 +4,22 @@ import jakarta.persistence.*;
 import lombok.*;
 import modak.modakmodak.dto.MeetingDetailRequest;
 import java.time.LocalDateTime;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class Meeting {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @CreatedDate // 생성 시 자동으로 시간이 저장됩니다.
+    @Column(updatable = false) // 생성 후에는 수정되지 않도록 설정
+    private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
     private MeetingAtmosphere atmosphere; // 도란도란, 조용한
