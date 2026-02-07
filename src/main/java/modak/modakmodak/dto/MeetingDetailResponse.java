@@ -10,10 +10,11 @@ public record MeetingDetailResponse(
     public record MeetingData(
             Long meetingId,
             String title,
+            String createdAt, // 모임 생성 시간
             String description,
             String area,
             String locationDetail,
-            String date,
+            String date, // 모임 약속 날짜
             List<String> hashtags,
             String hostAnnouncement,
             ParticipantInfo participants,
