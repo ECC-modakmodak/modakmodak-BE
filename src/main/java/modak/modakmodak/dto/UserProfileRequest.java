@@ -1,6 +1,7 @@
 package modak.modakmodak.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import modak.modakmodak.entity.MeetingAtmosphere;
 
 @Schema(description = "프로필 수정 요청 정보")
 public record UserProfileRequest(
@@ -17,7 +18,7 @@ public record UserProfileRequest(
         String targetMessage,
 
         @Schema(description = "선호하는 모임 유형", example = "도란도란")
-        String preferredType,
+        MeetingAtmosphere preferredType,
 
         @Schema(description = "주 활동 지역", example = "서대문구")
         String activityArea
