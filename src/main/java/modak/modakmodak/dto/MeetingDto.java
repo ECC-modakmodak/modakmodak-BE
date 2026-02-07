@@ -5,10 +5,10 @@ import java.util.List;
 public record MeetingDto(
         Long meetingId,
         String title,
+        String createdAt,
         String hostNickname,
         int currentParticipants,
         int maxParticipants,
         String date,
-        String createdAt,
         List<String> hashtags) {
 }

@@ -66,6 +66,7 @@ public class MeetingService {
                 return new MeetingDetailResponse.MeetingData(
                                 meeting.getId(),
                                 meeting.getTitle(), // DB의 진짜 제목
+                                meeting.getCreatedAt() != null ? meeting.getCreatedAt().toString() : "",
                                 meeting.getDescription(), // DB의 진짜 설명
                                 meeting.getArea(), // DB의 진짜 지역
                                 meeting.getLocationDetail(), // DB의 진짜 장소
@@ -91,6 +92,7 @@ public class MeetingService {
                         return new modak.modakmodak.dto.MeetingDto(
                                         meeting.getId(),
                                         meeting.getTitle(),
+                                        meeting.getCreatedAt() != null ? meeting.getCreatedAt().toString() : "",
                                         hostNickname,
                                         count,
                                         meeting.getMaxParticipants(),
