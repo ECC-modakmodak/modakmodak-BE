@@ -27,6 +27,11 @@ public class UserService {
                 .email(request.email())
                 .nickname(request.nickname())
                 .attendanceRate(0) // 초기 참여율 설정
+                .preferredType(request.preferredType())   // 선호 분위기 (Enum)
+                .preferredMethod(request.preferredMethod()) // 대면/비대면 (Enum)
+                .activityArea(request.activityArea())       // 활동 지역
+                .targetMessage(request.targetMessage())     // 나의 목표
+                .profileImage("https://default-image.png")
                 .build();
 
         return userRepository.save(user).getId(); // ◀ DB에 실제 저장되는 지점
