@@ -1,6 +1,5 @@
 package modak.modakmodak.service;
 
-// 아래 import 문들이 반드시 있어야 에러가 사라집니다!
 import lombok.RequiredArgsConstructor;
 import modak.modakmodak.dto.UserJoinRequest;
 import modak.modakmodak.entity.User;
@@ -16,7 +15,14 @@ public class UserService {
     private final UserRepository userRepository;
 
     public Long join(UserJoinRequest request) {
-        // 1. 이미 가입된 이메일인지 리포지토리로 확인
+        if (userRepository.existsByUsername(request.username())) {
+            throw new IllegalStateException("이미 존재하는 아이디입니다.");
+        }
+
+        if (userRepository.existsByNickname(request.nickname())) {
+            throw new IllegalStateException("이미 존재하는 닉네임입니다.");
+        }
+
         userRepository.findByEmail(request.email())
                 .ifPresent(u -> { throw new IllegalStateException("이미 가입된 이메일입니다."); });
 
@@ -35,5 +41,15 @@ public class UserService {
                 .build();
 
         return userRepository.save(user).getId(); // ◀ DB에 실제 저장되는 지점
+    }
+
+    @Transactional(readOnly = true)
+    public boolean checkUsernameAvailable(String username) {
+        return !userRepository.existsByUsername(username);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean checkNicknameAvailable(String nickname) {
+        return !userRepository.existsByNickname(nickname);
     }
 }
