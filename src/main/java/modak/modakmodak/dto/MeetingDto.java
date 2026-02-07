@@ -5,6 +5,7 @@ import java.util.List;
 public record MeetingDto(
         Long meetingId,
         String title,
+        String createdAt,
         String hostNickname,
         int currentParticipants,
         int maxParticipants,

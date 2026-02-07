@@ -27,8 +27,13 @@ public class User {
 
     private String nickname;
     private String profileImage;
-    private String preferredType; //
     private String activityArea;
+
+    @Enumerated(EnumType.STRING)
+    private MeetingAtmosphere preferredType;
+
+    @Enumerated(EnumType.STRING)
+    private MeetingMethod preferredMethod;
 
     @Builder.Default
     private float attendanceRate = 0;

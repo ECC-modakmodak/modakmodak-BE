@@ -24,7 +24,8 @@ public class Participant {
 
     private String goal; // 시안에 있던 "빨간색 목표 태그" 내용
 
-    private String reactionEmoji; // 시안 하단에 있던 리액션 이모지
+    @Enumerated(EnumType.STRING)
+    private ReactionEmoji reactionEmoji; // 시안 하단에 있던 리액션 이모지
 
     private boolean isHost; // 방장 여부
 
