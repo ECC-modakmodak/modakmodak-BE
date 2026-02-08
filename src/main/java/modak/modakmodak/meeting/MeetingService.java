@@ -67,6 +67,7 @@ public class MeetingService {
                                 meeting.getId(),
                                 meeting.getTitle(), // DB의 진짜 제목
                                 meeting.getCreatedAt() != null ? meeting.getCreatedAt().toString() : "",
+                        "https://modak-bucket.s3.amazonaws.com/default-meeting.png",
                                 meeting.getDescription(), // DB의 진짜 설명
                                 meeting.getArea(), // DB의 진짜 지역
                                 meeting.getLocationDetail(), // DB의 진짜 장소
@@ -93,11 +94,16 @@ public class MeetingService {
                                         meeting.getId(),
                                         meeting.getTitle(),
                                         meeting.getCreatedAt() != null ? meeting.getCreatedAt().toString() : "",
+                                "https://modak-bucket.s3.amazonaws.com/default-meeting.png",
                                         hostNickname,
                                         count,
                                         meeting.getMaxParticipants(),
                                         meeting.getDate() != null ? meeting.getDate().toString() : "",
-                                        List.of(meeting.getAtmosphere().name(), meeting.getCategory().name()));
+                                        List.of(
+                                                meeting.getAtmosphere() != null ? meeting.getAtmosphere().name() : "기타",
+                                                meeting.getCategory() != null ? meeting.getCategory().name() : "미정"
+                                        )
+                        );
                 }).toList();
 
                 // 오늘의 팟 (임시로 첫 번째 모임 사용, 없으면 null)
