@@ -72,7 +72,10 @@ public class MeetingService {
                                 meeting.getArea(), // DB의 진짜 지역
                                 meeting.getLocationDetail(), // DB의 진짜 장소
                                 meeting.getDate() != null ? meeting.getDate().toString() : null, // 날짜 형식 변환
-                                List.of(meeting.getAtmosphere().name(), meeting.getCategory().name()),
+                                List.of(
+                                        meeting.getAtmosphere() != null ? meeting.getAtmosphere().name() : "기타",
+                                        meeting.getCategory() != null ? meeting.getCategory().name() : "미정"
+                         ),
                                 "방장이 등록한 공지사항이 이곳에 표시됩니다.", // hostAnnouncement
                                 null, // 참여자 목록 (추후 조인 조회로 구현)
                                 null // 내 상태 정보 (추후 조회 구현)
