@@ -11,6 +11,7 @@ public record MeetingDetailResponse(
             Long meetingId,
             String title,
             String createdAt, // 모임 생성 시간
+            String representativeImage,
             String description,
             String area,
             String locationDetail,
