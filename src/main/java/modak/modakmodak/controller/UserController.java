@@ -42,6 +42,9 @@ public class UserController {
                 .password(request.password())
                 .email(request.email())
                 .nickname(request.nickname())
+                .preferredType(request.preferredType())
+                .activityArea(request.activityArea())
+                .targetMessage(request.targetMessage())
                 .attendanceRate(0) // 초기값 설정
                 .build();
 
