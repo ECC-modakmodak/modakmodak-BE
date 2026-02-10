@@ -22,6 +22,7 @@ public class MeetingService {
                                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID: " + userId));
 
                 Meeting meeting = Meeting.builder()
+                                .user(user)
                                 .atmosphere(request.atmosphere()) // Enum으로 바로 저장
                                 .category(request.category()) // Enum으로 바로 저장
                                 .categoryEtc(request.categoryEtc()) // "기타" 내용 저장
