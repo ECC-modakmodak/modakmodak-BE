@@ -18,7 +18,7 @@ public record UserJoinRequest(
         @Schema(description = "닉네임", example = "지인")
         String nickname,
 
-        @Schema(description = "선호 분위기", example = "도란도란")
+        @Schema(description = "선호 분위기", example = "CHATTY")
                 MeetingAtmosphere preferredType, // 조용히, 도란도란
 
         @Schema(description = "선호 방식", example = "대면")
