@@ -41,4 +41,10 @@ public class Participant {
     public void updateStatusBadge(String statusBadge) {
         this.statusBadge = statusBadge;
     }
+
+    private Boolean attended; // 출석 여부 (null: 미체크, true: 출석, false: 결석)
+
+    public void updateAttendance(Boolean attended) {
+        this.attended = attended;
+    }
 }

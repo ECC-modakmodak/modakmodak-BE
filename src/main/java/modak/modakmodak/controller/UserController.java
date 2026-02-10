@@ -16,7 +16,6 @@ import modak.modakmodak.dto.FindPwRequest;
 import modak.modakmodak.dto.ResetPwRequest;
 import modak.modakmodak.dto.WithdrawRequest;
 
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -141,7 +140,6 @@ public class UserController {
     public ResponseEntity<String> withdraw(@RequestBody WithdrawRequest request) {
         Optional<User> user = userRepository.findByUsername(request.username());
 
-
         // 1. 사용자가 존재하는지 확인
         if (user.isPresent()) {
             User foundUser = user.get();
@@ -193,15 +191,6 @@ public class UserController {
             User user = userOptional.get();
 
             // 2. 시안 명세서에 맞는 보따리(Map)를 만들어 데이터를 채웁니다.
-            Map<String, Object> data = Map.of(
-                    "userId", user.getUsername(),
-                    "nickname", user.getNickname(),
-                    "email", user.getEmail(),
-                    "profileImage", user.getProfileImage() != null ? user.getProfileImage() : "https://...",
-                    "attendanceRate", user.getAttendanceRate(),
-                    "targetMessage", user.getTargetMessage() != null ? user.getTargetMessage() : "",
-                    "preferredType", user.getPreferredType() != null ? user.getPreferredType() : "",
-                    "activityArea", user.getActivityArea() != null ? user.getActivityArea() : "");
             Map<String, Object> data = new HashMap<>(); // ◀ Map.of 대신 HashMap 사용 추천
 
             data.put("id", user.getId()); // ◀ [추가] 모임 생성(X-User-Id)에 꼭 필요한 숫자 ID!
