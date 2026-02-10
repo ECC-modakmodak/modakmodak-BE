@@ -10,8 +10,14 @@ import modak.modakmodak.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import modak.modakmodak.dto.UserProfileRequest;
+import modak.modakmodak.dto.UserLoginRequest;
+import modak.modakmodak.dto.FindIdRequest;
+import modak.modakmodak.dto.FindPwRequest;
+import modak.modakmodak.dto.ResetPwRequest;
+import modak.modakmodak.dto.WithdrawRequest;
 
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -26,7 +32,6 @@ public class UserController {
     private final UserRepository userRepository;
 
     // 1. 회원가입
-    // 1. 회원가입 (UserController.java 내부)
     @Operation(summary = "회원가입", description = "새로운 유저 정보를 DB에 저장합니다.")
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody UserJoinRequest request) { // ◀ User 대신 UserJoinRequest 사용
@@ -42,6 +47,10 @@ public class UserController {
                 .password(request.password())
                 .email(request.email())
                 .nickname(request.nickname())
+                .preferredType(request.preferredType())
+                .preferredMethod(request.preferredMethod())
+                .activityArea(request.activityArea())
+                .targetMessage(request.targetMessage())
                 .attendanceRate(0) // 초기값 설정
                 .build();
 
@@ -52,9 +61,9 @@ public class UserController {
     // 2. 로그인
     @Operation(summary = "로그인", description = "아이디와 비밀번호를 DB 데이터와 대조합니다.")
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody Map<String, String> request) {
-        Optional<User> user = userRepository.findByUsername(request.get("username"));
-        if (user.isPresent() && user.get().getPassword().equals(request.get("password"))) {
+    public ResponseEntity<String> login(@RequestBody UserLoginRequest request) {
+        Optional<User> user = userRepository.findByUsername(request.username());
+        if (user.isPresent() && user.get().getPassword().equals(request.password())) {
             return ResponseEntity.ok(user.get().getNickname() + "님, 로그인 성공!");
         }
         return ResponseEntity.status(401).body("아이디 또는 비밀번호가 틀렸습니다.");
@@ -63,8 +72,8 @@ public class UserController {
     // 3. 아이디 찾기 (이메일로 조회)
     @Operation(summary = "아이디 찾기", description = "이메일로 가입된 유저의 아이디를 찾습니다.")
     @PostMapping("/find-id")
-    public ResponseEntity<String> findId(@RequestBody Map<String, String> request) {
-        Optional<User> user = userRepository.findByEmail(request.get("email"));
+    public ResponseEntity<String> findId(@RequestBody FindIdRequest request) {
+        Optional<User> user = userRepository.findByEmail(request.email());
         return user.map(u -> ResponseEntity.ok("찾으시는 아이디는: " + u.getUsername()))
                 .orElse(ResponseEntity.status(404).body("해당 이메일로 가입된 정보가 없습니다."));
     }
@@ -72,13 +81,11 @@ public class UserController {
     //4. 임시 비밀번호 발급
     @Operation(summary = "비밀번호 찾기", description = "임시 비밀번호를 생성하여 DB를 업데이트합니다.")
     @PostMapping("/find-pw")
-    public ResponseEntity<String> findPassword(@RequestBody Map<String, String> request) {
-        String username = request.get("username");
-        String email = request.get("email");
+    public ResponseEntity<String> findPassword(@RequestBody FindPwRequest request) {
 
-        Optional<User> user = userRepository.findByUsername(username);
+        Optional<User> user = userRepository.findByUsername(request.username());
 
-        if (user.isPresent() && user.get().getEmail().equals(email)) {
+        if (user.isPresent() && user.get().getEmail().equals(request.email())) {
             // 실제로는 무작위 문자열을 생성해야 하지만, 테스트용으로 고정합니다.
             String tempPassword = "temp1234!";
             user.get().setPassword(tempPassword); // 비밀번호 변경
@@ -93,20 +100,16 @@ public class UserController {
     //5. 비밀번호 재설정
     @Operation(summary = "비밀번호 변경", description = "새로운 비밀번호를 DB에 저장합니다.")
     @PostMapping("/reset-pw")
-    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> request) {
-        String username = request.get("username");
-        String oldPassword = request.get("oldPassword"); // 현재(혹은 임시) 비밀번호
-        String newPassword = request.get("newPassword"); // 새로 바꿀 비밀번호
-
-        Optional<User> user = userRepository.findByUsername(username);
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPwRequest request) {
+        Optional<User> user = userRepository.findByUsername(request.username());
 
         // 1. 사용자가 존재하는지 확인
         if (user.isPresent()) {
             User foundUser = user.get();
 
             // 2. 현재 비밀번호가 일치하는지 확인 (보안을 위한 필수 절차)
-            if (foundUser.getPassword().equals(oldPassword)) {
-                foundUser.setPassword(newPassword); // 새로운 비밀번호 세팅
+            if (foundUser.getPassword().equals(request.oldPassword())) {
+                foundUser.setPassword(request.newPassword()); // 새로운 비밀번호 세팅
                 userRepository.save(foundUser); // DB 업데이트
                 return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
             } else {
@@ -120,18 +123,16 @@ public class UserController {
     //6. 회원 탈퇴
     @Operation(summary = "회원 탈퇴", description = "사용자 데이터를 DB에서 영구 삭제합니다.")
     @PostMapping("/withdraw")
-    public ResponseEntity<String> withdraw(@RequestBody Map<String, String> request) {
-        String username = request.get("username");
-        String password = request.get("password");
+    public ResponseEntity<String> withdraw(@RequestBody WithdrawRequest request) {
+        Optional<User> user = userRepository.findByUsername(request.username());
 
-        Optional<User> user = userRepository.findByUsername(username);
 
         // 1. 사용자가 존재하는지 확인
         if (user.isPresent()) {
             User foundUser = user.get();
 
             // 2. 비밀번호가 일치하는지 확인 (본인 확인)
-            if (foundUser.getPassword().equals(password)) {
+            if (foundUser.getPassword().equals(request.password())) {
                 userRepository.delete(foundUser); // DB에서 해당 데이터 삭제
                 return ResponseEntity.ok("회원 탈퇴가 완료되었습니다. 그동안 이용해 주셔서 감사합니다.");
             } else {
@@ -179,16 +180,17 @@ public class UserController {
             User user = userOptional.get();
 
             // 2. 시안 명세서에 맞는 보따리(Map)를 만들어 데이터를 채웁니다.
-            Map<String, Object> data = Map.of(
-                    "userId", user.getUsername(),
-                    "nickname", user.getNickname(),
-                    "email", user.getEmail(),
-                    "profileImage", user.getProfileImage() != null ? user.getProfileImage() : "https://...",
-                    "attendanceRate", user.getAttendanceRate(),
-                    "targetMessage", user.getTargetMessage() != null ? user.getTargetMessage() : "",
-                    "preferredType", user.getPreferredType() != null ? user.getPreferredType() : "",
-                    "activityArea", user.getActivityArea() != null ? user.getActivityArea() : ""
-            );
+            Map<String, Object> data = new HashMap<>(); // ◀ Map.of 대신 HashMap 사용 추천
+
+            data.put("id", user.getId()); // ◀ [추가] 모임 생성(X-User-Id)에 꼭 필요한 숫자 ID!
+            data.put("userId", user.getUsername());
+            data.put("nickname", user.getNickname());
+            data.put("email", user.getEmail());
+            data.put("profileImage", user.getProfileImage() != null ? user.getProfileImage() : "https://...");
+            data.put("attendanceRate", user.getAttendanceRate());
+            data.put("targetMessage", user.getTargetMessage() != null ? user.getTargetMessage() : "");
+            data.put("preferredType", user.getPreferredType() != null ? user.getPreferredType() : "");
+            data.put("activityArea", user.getActivityArea() != null ? user.getActivityArea() : "");
 
             return ResponseEntity.ok(Map.of(
                     "status", 200,
