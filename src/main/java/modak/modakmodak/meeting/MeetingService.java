@@ -68,15 +68,14 @@ public class MeetingService {
                                 meeting.getId(),
                                 meeting.getTitle(), // DB의 진짜 제목
                                 meeting.getCreatedAt() != null ? meeting.getCreatedAt().toString() : "",
-                        "https://modak-bucket.s3.amazonaws.com/default-meeting.png",
+                                "https://modak-bucket.s3.amazonaws.com/default-meeting.png",
                                 meeting.getDescription(), // DB의 진짜 설명
                                 meeting.getArea(), // DB의 진짜 지역
                                 meeting.getLocationDetail(), // DB의 진짜 장소
                                 meeting.getDate() != null ? meeting.getDate().toString() : null, // 날짜 형식 변환
                                 List.of(
-                                        meeting.getAtmosphere() != null ? meeting.getAtmosphere().name() : "기타",
-                                        meeting.getCategory() != null ? meeting.getCategory().name() : "미정"
-                         ),
+                                                meeting.getAtmosphere() != null ? meeting.getAtmosphere().name() : "기타",
+                                                meeting.getCategory() != null ? meeting.getCategory().name() : "미정"),
                                 "방장이 등록한 공지사항이 이곳에 표시됩니다.", // hostAnnouncement
                                 null, // 참여자 목록 (추후 조인 조회로 구현)
                                 null // 내 상태 정보 (추후 조회 구현)
@@ -98,16 +97,16 @@ public class MeetingService {
                                         meeting.getId(),
                                         meeting.getTitle(),
                                         meeting.getCreatedAt() != null ? meeting.getCreatedAt().toString() : "",
-                                "https://modak-bucket.s3.amazonaws.com/default-meeting.png",
+                                        "https://modak-bucket.s3.amazonaws.com/default-meeting.png",
                                         hostNickname,
                                         count,
                                         meeting.getMaxParticipants(),
                                         meeting.getDate() != null ? meeting.getDate().toString() : "",
                                         List.of(
-                                                meeting.getAtmosphere() != null ? meeting.getAtmosphere().name() : "기타",
-                                                meeting.getCategory() != null ? meeting.getCategory().name() : "미정"
-                                        )
-                        );
+                                                        meeting.getAtmosphere() != null ? meeting.getAtmosphere().name()
+                                                                        : "기타",
+                                                        meeting.getCategory() != null ? meeting.getCategory().name()
+                                                                        : "미정"));
                 }).toList();
 
                 // 오늘의 팟 (임시로 첫 번째 모임 사용, 없으면 null)
@@ -241,5 +240,44 @@ public class MeetingService {
                                 new modak.modakmodak.dto.MeetingStatusUpdateResponse.StatusData(
                                                 participant.getId(),
                                                 participant.getStatusBadge()));
+        }
+
+        @Transactional
+        public modak.modakmodak.dto.AttendanceCheckResponse checkAttendance(Long userId, Long meetingId,
+                        modak.modakmodak.dto.AttendanceCheckRequest request) {
+
+                // 1. 요청자가 해당 모임의 팟장인지 확인
+                modak.modakmodak.entity.Participant host = participantRepository
+                                .findByMeetingIdAndIsHostTrue(meetingId);
+                if (host == null || !host.getUser().getId().equals(userId)) {
+                        throw new IllegalArgumentException("출석 체크 권한이 없습니다 (팟장이 아닙니다).");
+                }
+
+                // 2. 참여자 조회
+                modak.modakmodak.entity.Participant participant = participantRepository
+                                .findById(request.participantId())
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "존재하지 않는 참여자입니다. ID: " + request.participantId()));
+
+                // 3. 해당 참여자가 이 모임의 참여자인지 확인
+                if (!participant.getMeeting().getId().equals(meetingId)) {
+                        throw new IllegalArgumentException("해당 모임의 참여자가 아닙니다.");
+                }
+
+                // 4. 출석 상태 업데이트
+                participant.updateAttendance(request.attended());
+
+                // 5. 응답 반환
+                String nickname = (participant.getUser() != null) ? participant.getUser().getNickname() : "알수없음";
+                Long participantUserId = (participant.getUser() != null) ? participant.getUser().getId() : null;
+
+                return new modak.modakmodak.dto.AttendanceCheckResponse(
+                                200,
+                                "출석 체크가 완료되었습니다.",
+                                new modak.modakmodak.dto.AttendanceCheckResponse.AttendanceData(
+                                                participant.getId(),
+                                                participantUserId,
+                                                nickname,
+                                                participant.getAttended()));
         }
 }
