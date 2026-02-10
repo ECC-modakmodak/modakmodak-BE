@@ -184,7 +184,6 @@ public class UserController {
             User user = userOptional.get();
 
             // 2. 시안 명세서에 맞는 보따리(Map)를 만들어 데이터를 채웁니다.
-            // 2. 시안 명세서에 맞는 보따리(Map)를 만들어 데이터를 채웁니다.
             Map<String, Object> data = new HashMap<>(); // ◀ Map.of 대신 HashMap 사용 추천
 
             data.put("id", user.getId()); // ◀ [추가] 모임 생성(X-User-Id)에 꼭 필요한 숫자 ID!
