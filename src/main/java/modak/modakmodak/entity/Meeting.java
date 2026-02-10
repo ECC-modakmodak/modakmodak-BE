@@ -17,6 +17,10 @@ public class Meeting {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @CreatedDate // 생성 시 자동으로 시간이 저장됩니다.
     @Column(updatable = false) // 생성 후에는 수정되지 않도록 설정
     @Builder.Default
