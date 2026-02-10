@@ -43,6 +43,7 @@ public class UserController {
                 .email(request.email())
                 .nickname(request.nickname())
                 .preferredType(request.preferredType())
+                .preferredMethod(request.preferredMethod())
                 .activityArea(request.activityArea())
                 .targetMessage(request.targetMessage())
                 .attendanceRate(0) // 초기값 설정
