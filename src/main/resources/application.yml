@@ -20,3 +20,8 @@ springdoc:
     path: /swagger
   api-docs:
     path: /api-docs
+
+google:
+  oauth:
+    client-id: ${GOOGLE_CLIENT_ID:your-client-id}
+    client-secret: ${GOOGLE_CLIENT_SECRET:your-client-secret}

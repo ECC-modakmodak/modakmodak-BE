@@ -33,6 +33,9 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	// Swagger (SpringDoc UI)
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+	// Google OAuth
+	implementation 'com.google.api-client:google-api-client:2.2.0'
+	implementation 'com.google.auth:google-auth-library-oauth2-http:1.19.0'
 }
 
 tasks.named('test') {

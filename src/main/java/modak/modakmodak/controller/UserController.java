@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import modak.modakmodak.dto.UserProfileRequest;
 
-
 import java.util.Map;
 import java.util.Optional;
 
@@ -60,6 +59,21 @@ public class UserController {
         return ResponseEntity.status(401).body("아이디 또는 비밀번호가 틀렸습니다.");
     }
 
+    // 2-1. Google OAuth 로그인
+    @Operation(summary = "Google 로그인", description = "Google ID 토큰으로 로그인합니다.")
+    @PostMapping("/login/google")
+    public ResponseEntity<?> loginWithGoogle(@RequestBody modak.modakmodak.dto.GoogleLoginRequest request) {
+        try {
+            modak.modakmodak.dto.LoginResponse response = userService.loginWithGoogle(request.idToken());
+            return ResponseEntity.status(201).body(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(401).body(Map.of(
+                    "status", 401,
+                    "error", "INVALID_TOKEN",
+                    "message", e.getMessage()));
+        }
+    }
+
     // 3. 아이디 찾기 (이메일로 조회)
     @Operation(summary = "아이디 찾기", description = "이메일로 가입된 유저의 아이디를 찾습니다.")
     @PostMapping("/find-id")
@@ -69,7 +83,7 @@ public class UserController {
                 .orElse(ResponseEntity.status(404).body("해당 이메일로 가입된 정보가 없습니다."));
     }
 
-    //4. 임시 비밀번호 발급
+    // 4. 임시 비밀번호 발급
     @Operation(summary = "비밀번호 찾기", description = "임시 비밀번호를 생성하여 DB를 업데이트합니다.")
     @PostMapping("/find-pw")
     public ResponseEntity<String> findPassword(@RequestBody Map<String, String> request) {
@@ -90,7 +104,7 @@ public class UserController {
         }
     }
 
-    //5. 비밀번호 재설정
+    // 5. 비밀번호 재설정
     @Operation(summary = "비밀번호 변경", description = "새로운 비밀번호를 DB에 저장합니다.")
     @PostMapping("/reset-pw")
     public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> request) {
@@ -117,7 +131,7 @@ public class UserController {
         }
     }
 
-    //6. 회원 탈퇴
+    // 6. 회원 탈퇴
     @Operation(summary = "회원 탈퇴", description = "사용자 데이터를 DB에서 영구 삭제합니다.")
     @PostMapping("/withdraw")
     public ResponseEntity<String> withdraw(@RequestBody Map<String, String> request) {
@@ -154,17 +168,15 @@ public class UserController {
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             user.updateProfile(request); // ◀ 엔티티의 업데이트 메서드 호출
-            userRepository.save(user);   // ◀ DB 저장
+            userRepository.save(user); // ◀ DB 저장
 
             return ResponseEntity.ok(Map.of(
                     "status", 200,
-                    "message", "프로필 정보가 성공적으로 변경되었습니다."
-            ));
+                    "message", "프로필 정보가 성공적으로 변경되었습니다."));
         } else {
             return ResponseEntity.status(404).body(Map.of(
                     "status", 404,
-                    "message", "사용자를 찾을 수 없습니다."
-            ));
+                    "message", "사용자를 찾을 수 없습니다."));
         }
     }
 
@@ -187,19 +199,16 @@ public class UserController {
                     "attendanceRate", user.getAttendanceRate(),
                     "targetMessage", user.getTargetMessage() != null ? user.getTargetMessage() : "",
                     "preferredType", user.getPreferredType() != null ? user.getPreferredType() : "",
-                    "activityArea", user.getActivityArea() != null ? user.getActivityArea() : ""
-            );
+                    "activityArea", user.getActivityArea() != null ? user.getActivityArea() : "");
 
             return ResponseEntity.ok(Map.of(
                     "status", 200,
                     "message", "프로필 조회 성공",
-                    "data", data
-            ));
+                    "data", data));
         } else {
             return ResponseEntity.status(404).body(Map.of(
                     "status", 404,
-                    "message", "사용자를 찾을 수 없습니다."
-            ));
+                    "message", "사용자를 찾을 수 없습니다."));
         }
     }
 }
