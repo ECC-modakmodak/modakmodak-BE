@@ -15,6 +15,7 @@ import modak.modakmodak.dto.FindIdRequest;
 import modak.modakmodak.dto.FindPwRequest;
 import modak.modakmodak.dto.ResetPwRequest;
 import modak.modakmodak.dto.WithdrawRequest;
+import modak.modakmodak.dto.UserLoginRequest;
 
 import java.util.HashMap;
 import java.util.Map;
