@@ -13,6 +13,7 @@ import modak.modakmodak.repository.ReviewRepository;
 import modak.modakmodak.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import modak.modakmodak.dto.ReviewUpdateRequest;
 
 import java.util.List;
 
@@ -69,5 +70,34 @@ public class ReviewController {
 
         reviewRepository.save(review);
         return ResponseEntity.ok("회고가 성공적으로 등록되었습니다.");
+    }
+
+    @Operation(summary = "회고 수정", description = "작성한 회고를 수정합니다. 회고가 없으면 안내 메시지를 반환합니다.")
+    @PutMapping("/{retrospectId}")
+    public ResponseEntity<?> updateReview(
+            @PathVariable Long retrospectId,
+            @RequestBody ReviewUpdateRequest request) {
+
+        // 1. 수정할 회고가 있는지 확인합니다.
+        Review review = reviewRepository.findById(retrospectId).orElse(null);
+
+        // 2. 회고가 없는 경우, 에러 대신 부드러운 메시지를 보냅니다.
+        if (review == null) {
+            return ResponseEntity.ok("해당 모임에 작성된 회고가 없어 수정할 수 없습니다.");
+        }
+
+        // 3. 데이터 업데이트 (목표 달성 상태는 String으로 저장 중이므로 변환하여 저장하거나 필드를 추가해야 합니다)
+        review.setFocusRating(request.focusRating());
+        review.setContent(request.content());
+        // 만약 goalStatus 필드에 %를 저장하고 싶다면 아래처럼 처리합니다.
+        review.setGoalStatus(request.goalAchievement() + "%");
+
+        reviewRepository.save(review);
+
+        // 4. 성공 응답 양식에 맞춰 반환합니다.
+        return ResponseEntity.ok(java.util.Map.of(
+                "retrospectId", retrospectId,
+                "message", "회고 수정 완료"
+        ));
     }
 }
