@@ -26,4 +26,12 @@ public class MateController {
         MateRequestResponse response = mateService.sendMateRequest(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @Operation(summary = "메이트 요청 목록 조회", description = "내가 받은 메이트 요청 목록을 조회합니다.")
+    @GetMapping("/requests")
+    public ResponseEntity<modak.modakmodak.dto.MateRequestListResponse> getMateRequestList(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId) {
+        modak.modakmodak.dto.MateRequestListResponse response = mateService.getMateRequestList(userId);
+        return ResponseEntity.ok(response);
+    }
 }

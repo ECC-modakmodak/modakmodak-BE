@@ -53,4 +53,25 @@ public class MateService {
                 savedRequest.getId(),
                 "메이트 신청 완료");
     }
+
+    @Transactional(readOnly = true)
+    public modak.modakmodak.dto.MateRequestListResponse getMateRequestList(Long userId) {
+        // 내가 받은 메이트 요청 목록 조회
+        java.util.List<MateRequest> requests = mateRequestRepository.findByToUserId(userId);
+
+        // DTO로 변환
+        java.util.List<modak.modakmodak.dto.MateRequestListResponse.MateRequestDto> requestDtos = requests.stream()
+                .map(request -> new modak.modakmodak.dto.MateRequestListResponse.MateRequestDto(
+                        request.getId(),
+                        request.getFromUser().getId(),
+                        request.getFromUser().getNickname(),
+                        request.getFromUser().getProfileImage() != null
+                                ? request.getFromUser().getProfileImage()
+                                : "https://modak-bucket.s3.amazonaws.com/default-profile.png",
+                        request.getStatus().name(),
+                        request.getCreatedAt().toString()))
+                .toList();
+
+        return new modak.modakmodak.dto.MateRequestListResponse(requestDtos);
+    }
 }
