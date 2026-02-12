@@ -22,6 +22,7 @@ public class MeetingService {
                                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID: " + userId));
 
                 Meeting meeting = Meeting.builder()
+                                .user(user)
                                 .atmosphere(request.atmosphere()) // Enum으로 바로 저장
                                 .category(request.category()) // Enum으로 바로 저장
                                 .categoryEtc(request.categoryEtc()) // "기타" 내용 저장
@@ -289,5 +290,41 @@ public class MeetingService {
                                 new modak.modakmodak.dto.MeetingCompleteResponse.CompleteData(
                                                 meeting.getId(),
                                                 meeting.getIsCompleted()));
+        public modak.modakmodak.dto.AttendanceCheckResponse checkAttendance(Long userId, Long meetingId,
+                        modak.modakmodak.dto.AttendanceCheckRequest request) {
+
+                // 1. 요청자가 해당 모임의 팟장인지 확인
+                modak.modakmodak.entity.Participant host = participantRepository
+                                .findByMeetingIdAndIsHostTrue(meetingId);
+                if (host == null || !host.getUser().getId().equals(userId)) {
+                        throw new IllegalArgumentException("출석 체크 권한이 없습니다 (팟장이 아닙니다).");
+                }
+
+                // 2. 참여자 조회
+                modak.modakmodak.entity.Participant participant = participantRepository
+                                .findById(request.participantId())
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "존재하지 않는 참여자입니다. ID: " + request.participantId()));
+
+                // 3. 해당 참여자가 이 모임의 참여자인지 확인
+                if (!participant.getMeeting().getId().equals(meetingId)) {
+                        throw new IllegalArgumentException("해당 모임의 참여자가 아닙니다.");
+                }
+
+                // 4. 출석 상태 업데이트
+                participant.updateAttendance(request.attended());
+
+                // 5. 응답 반환
+                String nickname = (participant.getUser() != null) ? participant.getUser().getNickname() : "알수없음";
+                Long participantUserId = (participant.getUser() != null) ? participant.getUser().getId() : null;
+
+                return new modak.modakmodak.dto.AttendanceCheckResponse(
+                                200,
+                                "출석 체크가 완료되었습니다.",
+                                new modak.modakmodak.dto.AttendanceCheckResponse.AttendanceData(
+                                                participant.getId(),
+                                                participantUserId,
+                                                nickname,
+                                                participant.getAttended()));
         }
 }

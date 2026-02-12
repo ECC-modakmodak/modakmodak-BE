@@ -19,11 +19,18 @@ public class User {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @Column(nullable = false)
+    @Column(nullable = true) // OAuth 사용자는 비밀번호 없음
     private String password;
 
     @Column(unique = true, nullable = false)
     private String email;
+
+    @Column(length = 20)
+    @Builder.Default
+    private String provider = "LOCAL"; // "LOCAL" 또는 "GOOGLE"
+
+    @Column(length = 255)
+    private String providerId; // OAuth 제공자의 고유 사용자 ID
 
     private String nickname;
     private String profileImage;
@@ -41,7 +48,6 @@ public class User {
     private String statusMessage;
     private String targetMessage;
 
-
     // 회원가입 전용 생성자
     public User(String username, String password, String email, String nickname) {
         this.username = username;
@@ -51,11 +57,17 @@ public class User {
     }
 
     public void updateProfile(UserProfileRequest request) {
-        if (request.nickname() != null) this.nickname = request.nickname();
-        if (request.email() != null) this.email = request.email();
-        if (request.profileImage() != null) this.profileImage = request.profileImage();
-        if (request.targetMessage() != null) this.targetMessage = request.targetMessage();
-        if (request.preferredType() != null) this.preferredType = request.preferredType();
-        if (request.activityArea() != null) this.activityArea = request.activityArea();
+        if (request.nickname() != null)
+            this.nickname = request.nickname();
+        if (request.email() != null)
+            this.email = request.email();
+        if (request.profileImage() != null)
+            this.profileImage = request.profileImage();
+        if (request.targetMessage() != null)
+            this.targetMessage = request.targetMessage();
+        if (request.preferredType() != null)
+            this.preferredType = request.preferredType();
+        if (request.activityArea() != null)
+            this.activityArea = request.activityArea();
     }
 }

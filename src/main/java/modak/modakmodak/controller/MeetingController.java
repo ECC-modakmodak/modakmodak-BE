@@ -87,5 +87,12 @@ public class MeetingController {
             @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
             @PathVariable Long meetingId) {
         return ResponseEntity.ok(meetingService.completeMeetingByHost(userId, meetingId));
+    @Operation(summary = "출석 체크", description = "팟장이 참여자의 출석 여부를 체크합니다.")
+    @PatchMapping("/{meetingId}/attendance")
+    public ResponseEntity<modak.modakmodak.dto.AttendanceCheckResponse> checkAttendance(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+            @PathVariable Long meetingId,
+            @RequestBody modak.modakmodak.dto.AttendanceCheckRequest request) {
+        return ResponseEntity.ok(meetingService.checkAttendance(userId, meetingId, request));
     }
 }
