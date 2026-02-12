@@ -14,7 +14,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Builder
 @EntityListeners(AuditingEntityListener.class)
 public class Meeting {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @CreatedDate // 생성 시 자동으로 시간이 저장됩니다.
@@ -39,6 +40,12 @@ public class Meeting {
     private String description;
     private String imageUrl;
 
+    @Column(columnDefinition = "TEXT")
+    private String goal; // 팟 목표
+
+    @Builder.Default
+    private Boolean isCompleted = false; // 팟 종료 상태
+
     private String status; // PENDING(대기), OPEN(개설완료)
 
     // 세부 정보 업데이트 메서드
@@ -49,6 +56,12 @@ public class Meeting {
         this.locationDetail = request.locationDetail();
         this.description = request.description();
         this.imageUrl = request.imageUrl();
+        this.goal = request.goal();
         this.status = "OPEN";
+    }
+
+    // 팟 종료 메서드
+    public void completeMeeting() {
+        this.isCompleted = true;
     }
 }

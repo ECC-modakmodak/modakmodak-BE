@@ -67,15 +67,14 @@ public class MeetingService {
                                 meeting.getId(),
                                 meeting.getTitle(), // DB의 진짜 제목
                                 meeting.getCreatedAt() != null ? meeting.getCreatedAt().toString() : "",
-                        "https://modak-bucket.s3.amazonaws.com/default-meeting.png",
+                                "https://modak-bucket.s3.amazonaws.com/default-meeting.png",
                                 meeting.getDescription(), // DB의 진짜 설명
                                 meeting.getArea(), // DB의 진짜 지역
                                 meeting.getLocationDetail(), // DB의 진짜 장소
                                 meeting.getDate() != null ? meeting.getDate().toString() : null, // 날짜 형식 변환
                                 List.of(
-                                        meeting.getAtmosphere() != null ? meeting.getAtmosphere().name() : "기타",
-                                        meeting.getCategory() != null ? meeting.getCategory().name() : "미정"
-                         ),
+                                                meeting.getAtmosphere() != null ? meeting.getAtmosphere().name() : "기타",
+                                                meeting.getCategory() != null ? meeting.getCategory().name() : "미정"),
                                 "방장이 등록한 공지사항이 이곳에 표시됩니다.", // hostAnnouncement
                                 null, // 참여자 목록 (추후 조인 조회로 구현)
                                 null // 내 상태 정보 (추후 조회 구현)
@@ -93,31 +92,52 @@ public class MeetingService {
                                         : "알수없음";
                         int count = participantRepository.countByMeetingId(meeting.getId());
 
+                        // location 필드: area + locationDetail 조합
+                        String location = "";
+                        if (meeting.getArea() != null && meeting.getLocationDetail() != null) {
+                                location = meeting.getArea() + " " + meeting.getLocationDetail();
+                        } else if (meeting.getArea() != null) {
+                                location = meeting.getArea();
+                        } else if (meeting.getLocationDetail() != null) {
+                                location = meeting.getLocationDetail();
+                        }
+
                         return new modak.modakmodak.dto.MeetingDto(
                                         meeting.getId(),
                                         meeting.getTitle(),
                                         meeting.getCreatedAt() != null ? meeting.getCreatedAt().toString() : "",
-                                "https://modak-bucket.s3.amazonaws.com/default-meeting.png",
+                                        "https://modak-bucket.s3.amazonaws.com/default-meeting.png",
                                         hostNickname,
                                         count,
                                         meeting.getMaxParticipants(),
                                         meeting.getDate() != null ? meeting.getDate().toString() : "",
+                                        location,
                                         List.of(
-                                                meeting.getAtmosphere() != null ? meeting.getAtmosphere().name() : "기타",
-                                                meeting.getCategory() != null ? meeting.getCategory().name() : "미정"
-                                        )
-                        );
+                                                        meeting.getAtmosphere() != null ? meeting.getAtmosphere().name()
+                                                                        : "기타",
+                                                        meeting.getCategory() != null ? meeting.getCategory().name()
+                                                                        : "미정"));
                 }).toList();
 
-                // 오늘의 팟 (임시로 첫 번째 모임 사용, 없으면 null)
+                // 오늘의 팟: isCompleted가 false인 미팅 중 첫 번째 (종료되지 않은 팟만)
                 modak.modakmodak.dto.TodayMeetingDto todayData = null;
-                if (!meetingDtos.isEmpty()) {
-                        modak.modakmodak.dto.MeetingDto first = meetingDtos.get(0);
+                java.util.Optional<Meeting> activeMeeting = meetings.stream()
+                                .filter(m -> m.getIsCompleted() != null && !m.getIsCompleted())
+                                .findFirst();
+
+                if (activeMeeting.isPresent()) {
+                        Meeting meeting = activeMeeting.get();
                         todayData = new modak.modakmodak.dto.TodayMeetingDto(
-                                        "이화여대", // spot 정보가 Meeting에 없어서 임시 고정값 사용
-                                        first.title(),
-                                        first.date(),
-                                        first.hashtags());
+                                        meeting.getId(),
+                                        meeting.getArea() != null ? meeting.getArea() : "미정", // spot
+                                        meeting.getTitle(),
+                                        meeting.getDate() != null ? meeting.getDate().toString() : "",
+                                        meeting.getGoal() != null ? meeting.getGoal() : "",
+                                        List.of(
+                                                        meeting.getAtmosphere() != null ? meeting.getAtmosphere().name()
+                                                                        : "기타",
+                                                        meeting.getCategory() != null ? meeting.getCategory().name()
+                                                                        : "미정"));
                 }
 
                 return new modak.modakmodak.dto.MeetingListResponse(
@@ -240,5 +260,34 @@ public class MeetingService {
                                 new modak.modakmodak.dto.MeetingStatusUpdateResponse.StatusData(
                                                 participant.getId(),
                                                 participant.getStatusBadge()));
+        }
+
+        @Transactional
+        public modak.modakmodak.dto.MeetingCompleteResponse completeMeetingByHost(Long userId, Long meetingId) {
+                // 1. 모임 존재 확인
+                Meeting meeting = meetingRepository.findById(meetingId)
+                                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모임입니다. ID: " + meetingId));
+
+                // 2. 방장 권한 확인
+                modak.modakmodak.entity.Participant host = participantRepository
+                                .findByMeetingIdAndIsHostTrue(meetingId);
+                if (host == null || !host.getUser().getId().equals(userId)) {
+                        throw new IllegalArgumentException("팟 종료 권한이 없습니다 (방장이 아닙니다).");
+                }
+
+                // 3. 이미 종료된 팟인지 확인
+                if (meeting.getIsCompleted() != null && meeting.getIsCompleted()) {
+                        throw new IllegalArgumentException("이미 종료된 팟입니다.");
+                }
+
+                // 4. 팟 종료 처리
+                meeting.completeMeeting();
+
+                return new modak.modakmodak.dto.MeetingCompleteResponse(
+                                200,
+                                "팟이 종료되었습니다.",
+                                new modak.modakmodak.dto.MeetingCompleteResponse.CompleteData(
+                                                meeting.getId(),
+                                                meeting.getIsCompleted()));
         }
 }
