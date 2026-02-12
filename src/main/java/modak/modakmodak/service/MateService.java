@@ -115,4 +115,30 @@ public class MateService {
 
                 return new modak.modakmodak.dto.MateApprovalResponse(message, mateUserId);
         }
+
+        @Transactional(readOnly = true)
+        public modak.modakmodak.dto.MateListResponse getMateList(Long userId) {
+                // 내 메이트 목록 조회 (양방향)
+                java.util.List<modak.modakmodak.entity.Mate> mates = mateRepository.findMatesByUserId(userId);
+
+                // DTO로 변환 (상대방 정보만 추출)
+                java.util.List<modak.modakmodak.dto.MateListResponse.MateDto> mateDtos = mates.stream()
+                                .map(mate -> {
+                                        // 내가 user1이면 user2를, user2이면 user1을 반환
+                                        User mateUser = mate.getUser1().getId().equals(userId)
+                                                        ? mate.getUser2()
+                                                        : mate.getUser1();
+
+                                        return new modak.modakmodak.dto.MateListResponse.MateDto(
+                                                        mateUser.getId(),
+                                                        mateUser.getNickname(),
+                                                        mateUser.getProfileImage() != null
+                                                                        ? mateUser.getProfileImage()
+                                                                        : "https://modak-bucket.s3.amazonaws.com/default-profile.png",
+                                                        mate.getCreatedAt().toString());
+                                })
+                                .toList();
+
+                return new modak.modakmodak.dto.MateListResponse(mateDtos);
+        }
 }

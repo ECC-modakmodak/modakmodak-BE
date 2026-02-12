@@ -12,4 +12,8 @@ public interface MateRepository extends JpaRepository<Mate, Long> {
             "WHERE (m.user1.id = :userId1 AND m.user2.id = :userId2) " +
             "OR (m.user1.id = :userId2 AND m.user2.id = :userId1)")
     boolean existsMateRelationship(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
+
+    // 사용자의 메이트 목록 조회 (양방향)
+    @Query("SELECT m FROM Mate m WHERE m.user1.id = :userId OR m.user2.id = :userId")
+    java.util.List<Mate> findMatesByUserId(@Param("userId") Long userId);
 }
