@@ -1,0 +1,29 @@
+package modak.modakmodak.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import modak.modakmodak.dto.MateRequestRequest;
+import modak.modakmodak.dto.MateRequestResponse;
+import modak.modakmodak.service.MateService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@Tag(name = "Mate", description = "메이트 관련 API")
+@RestController
+@RequestMapping("/api/mates")
+@RequiredArgsConstructor
+public class MateController {
+
+    private final MateService mateService;
+
+    @Operation(summary = "메이트 신청", description = "다른 사용자에게 메이트 신청을 보냅니다.")
+    @PostMapping("/requests")
+    public ResponseEntity<MateRequestResponse> sendMateRequest(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+            @RequestBody MateRequestRequest request) {
+        MateRequestResponse response = mateService.sendMateRequest(userId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+}
