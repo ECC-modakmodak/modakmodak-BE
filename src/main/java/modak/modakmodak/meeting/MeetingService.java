@@ -290,6 +290,9 @@ public class MeetingService {
                                 new modak.modakmodak.dto.MeetingCompleteResponse.CompleteData(
                                                 meeting.getId(),
                                                 meeting.getIsCompleted()));
+        }
+
+        @Transactional
         public modak.modakmodak.dto.AttendanceCheckResponse checkAttendance(Long userId, Long meetingId,
                         modak.modakmodak.dto.AttendanceCheckRequest request) {
 
