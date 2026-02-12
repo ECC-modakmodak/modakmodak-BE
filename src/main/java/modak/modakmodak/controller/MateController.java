@@ -34,4 +34,14 @@ public class MateController {
         modak.modakmodak.dto.MateRequestListResponse response = mateService.getMateRequestList(userId);
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "메이트 요청 승인/거절", description = "받은 메이트 요청을 승인하거나 거절합니다.")
+    @PatchMapping("/requests/{requestId}")
+    public ResponseEntity<modak.modakmodak.dto.MateApprovalResponse> approveMateRequest(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+            @PathVariable Long requestId,
+            @RequestBody modak.modakmodak.dto.MateApprovalRequest request) {
+        modak.modakmodak.dto.MateApprovalResponse response = mateService.approveMateRequest(userId, requestId, request);
+        return ResponseEntity.ok(response);
+    }
 }
