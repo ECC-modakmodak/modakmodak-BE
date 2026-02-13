@@ -93,15 +93,8 @@ public class MeetingService {
                                         : "알수없음";
                         int count = participantRepository.countByMeetingId(meeting.getId());
 
-                        // location 필드: area + locationDetail 조합
-                        String location = "";
-                        if (meeting.getArea() != null && meeting.getLocationDetail() != null) {
-                                location = meeting.getArea() + " " + meeting.getLocationDetail();
-                        } else if (meeting.getArea() != null) {
-                                location = meeting.getArea();
-                        } else if (meeting.getLocationDetail() != null) {
-                                location = meeting.getLocationDetail();
-                        }
+                        // location 필드: area만 사용
+                        String location = meeting.getArea() != null ? meeting.getArea() : "";
 
                         return new modak.modakmodak.dto.MeetingDto(
                                         meeting.getId(),
@@ -111,7 +104,6 @@ public class MeetingService {
                                         hostNickname,
                                         count,
                                         meeting.getMaxParticipants(),
-                                        meeting.getDate() != null ? meeting.getDate().toString() : "",
                                         location,
                                         List.of(
                                                         meeting.getAtmosphere() != null ? meeting.getAtmosphere().name()
@@ -133,7 +125,6 @@ public class MeetingService {
                                         meeting.getArea() != null ? meeting.getArea() : "미정", // spot
                                         meeting.getTitle(),
                                         meeting.getDate() != null ? meeting.getDate().toString() : "",
-                                        meeting.getGoal() != null ? meeting.getGoal() : "",
                                         List.of(
                                                         meeting.getAtmosphere() != null ? meeting.getAtmosphere().name()
                                                                         : "기타",

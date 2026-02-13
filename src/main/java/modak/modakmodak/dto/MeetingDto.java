@@ -10,7 +10,6 @@ public record MeetingDto(
                 String hostNickname,
                 int currentParticipants,
                 int maxParticipants,
-                String date,
                 String location,
-        List<String> hashtags) {
+                List<String> hashtags) {
 }
