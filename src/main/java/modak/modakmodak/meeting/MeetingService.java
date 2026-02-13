@@ -93,7 +93,7 @@ public class MeetingService {
                                         p.isHost(),
                                         user.getProfileImage(),
                                         user.getTargetMessage() != null ? user.getTargetMessage() : "기본 목표가 없습니다.", // 회원가입 시 적은 목표
-                                        true, // 프로필 조회 가능 여부
+                                        p.getGoal() != null,
                                         displayedGoal,
                                         p.getReactionEmoji() != null ? p.getReactionEmoji().name() : "",
                                         p.getAttended() != null ? p.getAttended() : false);
