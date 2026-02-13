@@ -34,27 +34,17 @@ public class UserController {
     // 1. 회원가입
     @Operation(summary = "회원가입", description = "새로운 유저 정보를 DB에 저장합니다.")
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody UserJoinRequest request) { // ◀ User 대신 UserJoinRequest 사용
-
-        // 아이디 중복 체크
-        if (userRepository.findByUsername(request.username()).isPresent()) {
+    public ResponseEntity<String> signup(@RequestBody UserJoinRequest request) {
+        // 보안을 위해 가입 시점에도 중복 체크 유지
+        if (userRepository.existsByUsername(request.username())) {
             return ResponseEntity.badRequest().body("이미 사용 중인 아이디입니다.");
         }
+        if (userRepository.existsByNickname(request.nickname())) {
+            return ResponseEntity.badRequest().body("이미 사용 중인 닉네임입니다.");
+        }
 
-        // DTO 데이터를 엔티티로 변환하여 저장
-        User user = User.builder()
-                .username(request.username())
-                .password(request.password())
-                .email(request.email())
-                .nickname(request.nickname())
-                .preferredType(request.preferredType())
-                .preferredMethod(request.preferredMethod())
-                .activityArea(request.activityArea())
-                .targetMessage(request.targetMessage())
-                .attendanceRate(0) // 초기값 설정
-                .build();
-
-        userRepository.save(user);
+        // 서비스의 join 로직을 사용하면 사진 로직까지 한 번에 처리됩니다.
+        userService.join(request);
         return ResponseEntity.ok("회원가입 성공!");
     }
 
@@ -213,5 +203,29 @@ public class UserController {
                     "status", 404,
                     "message", "사용자를 찾을 수 없습니다."));
         }
+    }
+
+    // 아이디 중복 확인 (프론트엔드 실시간 체크용)
+    @Operation(summary = "아이디 중복 확인", description = "입력한 아이디가 이미 존재하는지 확인합니다.")
+    @GetMapping("/check-username")
+    public ResponseEntity<Map<String, Object>> checkUsername(@RequestParam String username) {
+        boolean isAvailable = userService.checkUsernameAvailable(username);
+        return ResponseEntity.ok(Map.of(
+                "status", 200,
+                "isAvailable", isAvailable,
+                "message", isAvailable ? "사용 가능한 아이디입니다." : "이미 존재하는 아이디입니다."
+        ));
+    }
+
+    // 닉네임 중복 확인 (프론트엔드 실시간 체크용)
+    @Operation(summary = "닉네임 중복 확인", description = "입력한 닉네임이 이미 존재하는지 확인합니다.")
+    @GetMapping("/check-nickname")
+    public ResponseEntity<Map<String, Object>> checkNickname(@RequestParam String nickname) {
+        boolean isAvailable = userService.checkNicknameAvailable(nickname);
+        return ResponseEntity.ok(Map.of(
+                "status", 200,
+                "isAvailable", isAvailable,
+                "message", isAvailable ? "사용 가능한 닉네임입니다." : "이미 존재하는 닉네임입니다."
+        ));
     }
 }
