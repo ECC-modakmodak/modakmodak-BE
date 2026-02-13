@@ -8,8 +8,9 @@ import modak.modakmodak.entity.User;
 import modak.modakmodak.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import modak.modakmodak.dto.MeetingUpdateDetailRequest;
 
-@Service // ◀ 이제 인텔리제이가 이 어노테이션을 인식합니다.
+@Service
 @RequiredArgsConstructor
 @Transactional
 public class UserService {
@@ -31,6 +32,8 @@ public class UserService {
                     throw new IllegalStateException("이미 가입된 이메일입니다.");
                 });
 
+        String defaultProfile = "https://modak-bucket.s3.ap-northeast-2.amazonaws.com/profile_default.png";
+
         // 2. 새로운 유저 엔티티 생성 및 저장
         User user = User.builder()
                 .username(request.username())
@@ -42,7 +45,7 @@ public class UserService {
                 .preferredMethod(request.preferredMethod()) // 대면/비대면 (Enum)
                 .activityArea(request.activityArea()) // 활동 지역
                 .targetMessage(request.targetMessage()) // 나의 목표
-                .profileImage("https://default-image.png")
+                .profileImage(defaultProfile)
                 .build();
 
         return userRepository.save(user).getId(); // ◀ DB에 실제 저장되는 지점

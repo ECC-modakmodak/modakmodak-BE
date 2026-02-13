@@ -8,6 +8,11 @@ import modak.modakmodak.entity.Meeting;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import modak.modakmodak.entity.User;
+import modak.modakmodak.entity.Participant;
+import modak.modakmodak.entity.ParticipationStatus;
+import java.util.stream.Collectors;
+import modak.modakmodak.dto.MeetingUpdateDetailRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -54,6 +59,13 @@ public class MeetingService {
                         throw new IllegalArgumentException("모임 설정 권한이 없습니다.");
                 }
 
+                String imageUrl = request.imageUrl();
+                if (imageUrl == null || imageUrl.isBlank()) {
+                        // pod_1 ~ pod_4 중 하나를 랜덤하게 선택
+                        int randomNum = (int) (Math.random() * 4) + 1;
+                        imageUrl = "https://modak-bucket.s3.ap-northeast-2.amazonaws.com/pod_" + randomNum + ".png";
+                }
+
                 meeting.updateDetails(request);
         }
 
@@ -61,24 +73,62 @@ public class MeetingService {
         public MeetingDetailResponse.MeetingData getMeetingDetail(Long userId, Long meetingId) {
                 // 1. DB에서 ID로 해당 모임을 찾습니다.
                 Meeting meeting = meetingRepository.findById(meetingId)
-                                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모임입니다. ID: " + meetingId));
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모임입니다. ID: " + meetingId));
 
-                // 2. DB에서 꺼낸 진짜 데이터(meeting.get...)들로 응답 객체를 만듭니다.
+                // 2. 해당 모임의 모든 참여자 정보 가져오기
+                List<Participant> participants = participantRepository.findByMeetingId(meetingId);
+
+                // 3. 참여자 목록 변환 (출석 여부 p.getAttended() 포함)
+                List<MeetingDetailResponse.MemberDetail> memberDetails = participants.stream()
+                        .map(p -> {
+                                User user = p.getUser();
+                                return new MeetingDetailResponse.MemberDetail(
+                                        user.getId(),
+                                        user.getNickname(),
+                                        p.isHost(),
+                                        user.getProfileImage(),
+                                        user.getTargetMessage() != null ? user.getTargetMessage() : "목표가 없습니다.",
+                                        user.getTargetMessage() != null,
+                                        p.getReactionEmoji() != null ? p.getReactionEmoji().getDescription() : "",
+                                        p.getAttended() != null ? p.getAttended() : false                                );
+                        }).collect(Collectors.toList());
+
+                // 4. 현재 조회 중인 유저의 상태 찾기
+                Participant myStatus = participants.stream()
+                        .filter(p -> p.getUser().getId().equals(userId))
+                        .findFirst()
+                        .orElse(null);
+
+                // 5. [수정] 진짜 데이터들을 응답 객체에 담습니다.
                 return new MeetingDetailResponse.MeetingData(
-                                meeting.getId(),
-                                meeting.getTitle(), // DB의 진짜 제목
-                                meeting.getCreatedAt() != null ? meeting.getCreatedAt().toString() : "",
-                                "https://modak-bucket.s3.amazonaws.com/default-meeting.png",
-                                meeting.getDescription(), // DB의 진짜 설명
-                                meeting.getArea(), // DB의 진짜 지역
-                                meeting.getLocationDetail(), // DB의 진짜 장소
-                                meeting.getDate() != null ? meeting.getDate().toString() : null, // 날짜 형식 변환
-                                List.of(
-                                                meeting.getAtmosphere() != null ? meeting.getAtmosphere().name() : "기타",
-                                                meeting.getCategory() != null ? meeting.getCategory().name() : "미정"),
-                                "방장이 등록한 공지사항이 이곳에 표시됩니다.", // hostAnnouncement
-                                null, // 참여자 목록 (추후 조인 조회로 구현)
-                                null // 내 상태 정보 (추후 조회 구현)
+                        meeting.getId(),
+                        meeting.getTitle(),
+                        meeting.getCreatedAt() != null ? meeting.getCreatedAt().toString() : "",
+
+                        // ◀ [중요] 고정 주소 대신 DB에 저장된 진짜 이미지 주소를 보냅니다.
+                        meeting.getImageUrl(),
+
+                        meeting.getDescription(),
+                        meeting.getArea(),
+                        meeting.getLocationDetail(),
+                        meeting.getDate() != null ? meeting.getDate().toString() : null,
+                        List.of(
+                                meeting.getAtmosphere() != null ? meeting.getAtmosphere().name() : "기타",
+                                meeting.getCategory() != null ? meeting.getCategory().name() : "미정"),
+
+                        // ◀ [중요] 공지사항도 실제 DB 필드값을 보냅니다.
+                        meeting.getHostAnnouncement() != null ? meeting.getHostAnnouncement() : "등록된 공지사항이 없습니다.",
+
+                        // ◀ [중요] 아까 만든 참여자 목록과 내 상태 정보를 넣어줍니다.
+                        new MeetingDetailResponse.ParticipantInfo(
+                                participants.size(),
+                                meeting.getMaxParticipants(),
+                                memberDetails
+                        ),
+                        myStatus != null ? new MeetingDetailResponse.UserStatus(
+                                myStatus.isHost(),
+                                myStatus.getStatus().name()
+                        ) : null
                 );
         }
 
@@ -321,4 +371,18 @@ public class MeetingService {
                                                 nickname,
                                                 participant.getAttended()));
         }
+
+        @Transactional
+        public void updateMeetingDetail(Long userId, Long meetingId, MeetingUpdateDetailRequest request) {
+                Meeting meeting = meetingRepository.findById(meetingId)
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모임입니다. ID: " + meetingId));
+
+                // 팟장 권한 검증
+                modak.modakmodak.entity.Participant host = participantRepository.findByMeetingIdAndIsHostTrue(meetingId);
+                if (host == null || !host.getUser().getId().equals(userId)) {
+                        throw new IllegalArgumentException("수정 권한이 없습니다 (방장이 아닙니다).");
+                }
+
+                meeting.updateDetail((modak.modakmodak.dto.MeetingUpdateDetailRequest) request);        }
+
 }

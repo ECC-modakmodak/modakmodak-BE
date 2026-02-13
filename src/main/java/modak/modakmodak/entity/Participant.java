@@ -28,6 +28,7 @@ public class Participant {
     private ReactionEmoji reactionEmoji; // 시안 하단에 있던 리액션 이모지
 
     private boolean isHost; // 방장 여부
+    private Boolean attended = false; // 출석 여부 (null: 미체크, true: 출석, false: 결석)
 
     @Enumerated(EnumType.STRING)
     private ParticipationStatus status; // APPROVED, PENDING 등
@@ -41,8 +42,6 @@ public class Participant {
     public void updateStatusBadge(String statusBadge) {
         this.statusBadge = statusBadge;
     }
-
-    private Boolean attended; // 출석 여부 (null: 미체크, true: 출석, false: 결석)
 
     public void updateAttendance(Boolean attended) {
         this.attended = attended;

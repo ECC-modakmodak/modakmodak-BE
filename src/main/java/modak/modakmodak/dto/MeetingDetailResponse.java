@@ -32,8 +32,10 @@ public record MeetingDetailResponse(
                         String nickname,
                         boolean isHost,
                         String profileImage,
+                        String targetMessage,
                         boolean hasGoal,
-                        String reactionEmoji) {
+                        String reactionEmoji,
+                        boolean attended ){
         }
 
         public record UserStatus(

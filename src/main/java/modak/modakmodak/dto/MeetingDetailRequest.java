@@ -7,6 +7,7 @@ public record MeetingDetailRequest(
                 String locationDetail,
                 String description,
                 String imageUrl,
-                String goal // 팟 목표
+                String goal, // 팟 목표
+                String hostAnnouncement
 ) {
 }
