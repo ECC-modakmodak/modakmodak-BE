@@ -23,4 +23,14 @@ public class NotificationController {
         NotificationListResponse response = notificationService.getNotificationList(userId);
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "알림 읽음 처리", description = "알림을 읽음 처리합니다.")
+    @PatchMapping("/{notificationId}/read")
+    public ResponseEntity<modak.modakmodak.dto.NotificationReadResponse> markNotificationAsRead(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+            @PathVariable Long notificationId) {
+        modak.modakmodak.dto.NotificationReadResponse response = notificationService.markNotificationAsRead(userId,
+                notificationId);
+        return ResponseEntity.ok(response);
+    }
 }

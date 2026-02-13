@@ -35,4 +35,21 @@ public class NotificationService {
 
         return new NotificationListResponse(notificationDtos);
     }
+
+    @Transactional
+    public modak.modakmodak.dto.NotificationReadResponse markNotificationAsRead(Long userId, Long notificationId) {
+        // 알림 조회
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new IllegalArgumentException("알림을 찾을 수 없습니다."));
+
+        // 본인의 알림인지 확인
+        if (!notification.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("알림에 접근할 권한이 없습니다.");
+        }
+
+        // 읽음 처리
+        notification.markAsRead();
+
+        return new modak.modakmodak.dto.NotificationReadResponse("알림을 읽음 처리했습니다.");
+    }
 }
