@@ -13,6 +13,7 @@ import modak.modakmodak.entity.Participant;
 import modak.modakmodak.entity.ParticipationStatus;
 import java.util.stream.Collectors;
 import modak.modakmodak.dto.MeetingUpdateDetailRequest;
+import modak.modakmodak.dto.ParticipantGoalRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -24,25 +25,25 @@ public class MeetingService {
 
         public Long setupMeeting(Long userId, MeetingSetupRequest request) {
                 modak.modakmodak.entity.User user = userRepository.findById(userId)
-                                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID: " + userId));
+                        .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID: " + userId));
 
                 Meeting meeting = Meeting.builder()
-                                .user(user)
-                                .atmosphere(request.atmosphere()) // Enum으로 바로 저장
-                                .category(request.category()) // Enum으로 바로 저장
-                                .categoryEtc(request.categoryEtc()) // "기타" 내용 저장
-                                .maxParticipants(request.maxParticipants())
-                                .status("PENDING")
-                                .build();
+                        .user(user)
+                        .atmosphere(request.atmosphere()) // Enum으로 바로 저장
+                        .category(request.category()) // Enum으로 바로 저장
+                        .categoryEtc(request.categoryEtc()) // "기타" 내용 저장
+                        .maxParticipants(request.maxParticipants())
+                        .status("PENDING")
+                        .build();
                 Meeting savedMeeting = meetingRepository.save(meeting);
 
                 // 방장(개설자) 참여 정보 저장 (자동 승인, 호스트 권한)
                 modak.modakmodak.entity.Participant host = modak.modakmodak.entity.Participant.builder()
-                                .meeting(savedMeeting)
-                                .user(user)
-                                .status(modak.modakmodak.entity.ParticipationStatus.APPROVED)
-                                .isHost(true)
-                                .build();
+                        .meeting(savedMeeting)
+                        .user(user)
+                        .status(modak.modakmodak.entity.ParticipationStatus.APPROVED)
+                        .isHost(true)
+                        .build();
                 participantRepository.save(host);
 
                 return savedMeeting.getId();
@@ -50,11 +51,11 @@ public class MeetingService {
 
         public void completeMeeting(Long userId, Long meetingId, MeetingDetailRequest request) {
                 Meeting meeting = meetingRepository.findById(meetingId)
-                                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모임입니다. ID: " + meetingId));
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모임입니다. ID: " + meetingId));
 
                 // 방장 검증
                 modak.modakmodak.entity.Participant host = participantRepository
-                                .findByMeetingIdAndIsHostTrue(meetingId);
+                        .findByMeetingIdAndIsHostTrue(meetingId);
                 if (host == null || !host.getUser().getId().equals(userId)) {
                         throw new IllegalArgumentException("모임 설정 권한이 없습니다.");
                 }
@@ -82,15 +83,20 @@ public class MeetingService {
                 List<MeetingDetailResponse.MemberDetail> memberDetails = participants.stream()
                         .map(p -> {
                                 User user = p.getUser();
+
+                                String displayedGoal = (p.getGoal() != null && !p.getGoal().isBlank())
+                                        ? p.getGoal() : "어떤 목표를 이루어볼까요?";
+
                                 return new MeetingDetailResponse.MemberDetail(
                                         user.getId(),
                                         user.getNickname(),
                                         p.isHost(),
                                         user.getProfileImage(),
-                                        user.getTargetMessage() != null ? user.getTargetMessage() : "목표가 없습니다.",
-                                        user.getTargetMessage() != null,
-                                        p.getReactionEmoji() != null ? p.getReactionEmoji().getDescription() : "",
-                                        p.getAttended() != null ? p.getAttended() : false                                );
+                                        user.getTargetMessage() != null ? user.getTargetMessage() : "기본 목표가 없습니다.", // 회원가입 시 적은 목표
+                                        true, // 프로필 조회 가능 여부
+                                        displayedGoal,
+                                        p.getReactionEmoji() != null ? p.getReactionEmoji().name() : "",
+                                        p.getAttended() != null ? p.getAttended() : false);
                         }).collect(Collectors.toList());
 
                 // 4. 현재 조회 중인 유저의 상태 찾기
@@ -138,66 +144,66 @@ public class MeetingService {
 
                 List<modak.modakmodak.dto.MeetingDto> meetingDtos = meetings.stream().map(meeting -> {
                         modak.modakmodak.entity.Participant host = participantRepository
-                                        .findByMeetingIdAndIsHostTrue(meeting.getId());
+                                .findByMeetingIdAndIsHostTrue(meeting.getId());
                         String hostNickname = (host != null && host.getUser() != null) ? host.getUser().getNickname()
-                                        : "알수없음";
+                                : "알수없음";
                         int count = participantRepository.countByMeetingId(meeting.getId());
 
                         // location 필드: area만 사용
                         String location = meeting.getArea() != null ? meeting.getArea() : "";
 
                         return new modak.modakmodak.dto.MeetingDto(
-                                        meeting.getId(),
-                                        meeting.getTitle(),
-                                        meeting.getCreatedAt() != null ? meeting.getCreatedAt().toString() : "",
-                                        "https://modak-bucket.s3.amazonaws.com/default-meeting.png",
-                                        hostNickname,
-                                        count,
-                                        meeting.getMaxParticipants(),
-                                        location,
-                                        List.of(
-                                                        meeting.getAtmosphere() != null ? meeting.getAtmosphere().name()
-                                                                        : "기타",
-                                                        meeting.getCategory() != null ? meeting.getCategory().name()
-                                                                        : "미정"));
+                                meeting.getId(),
+                                meeting.getTitle(),
+                                meeting.getCreatedAt() != null ? meeting.getCreatedAt().toString() : "",
+                                "https://modak-bucket.s3.amazonaws.com/default-meeting.png",
+                                hostNickname,
+                                count,
+                                meeting.getMaxParticipants(),
+                                location,
+                                List.of(
+                                        meeting.getAtmosphere() != null ? meeting.getAtmosphere().name()
+                                                : "기타",
+                                        meeting.getCategory() != null ? meeting.getCategory().name()
+                                                : "미정"));
                 }).toList();
 
                 // 오늘의 팟: isCompleted가 false인 미팅 중 첫 번째 (종료되지 않은 팟만)
                 modak.modakmodak.dto.TodayMeetingDto todayData = null;
                 java.util.Optional<Meeting> activeMeeting = meetings.stream()
-                                .filter(m -> m.getIsCompleted() != null && !m.getIsCompleted())
-                                .findFirst();
+                        .filter(m -> m.getIsCompleted() != null && !m.getIsCompleted())
+                        .findFirst();
 
                 if (activeMeeting.isPresent()) {
                         Meeting meeting = activeMeeting.get();
                         todayData = new modak.modakmodak.dto.TodayMeetingDto(
-                                        meeting.getId(),
-                                        meeting.getArea() != null ? meeting.getArea() : "미정", // spot
-                                        meeting.getTitle(),
-                                        meeting.getDate() != null ? meeting.getDate().toString() : "",
-                                        List.of(
-                                                        meeting.getAtmosphere() != null ? meeting.getAtmosphere().name()
-                                                                        : "기타",
-                                                        meeting.getCategory() != null ? meeting.getCategory().name()
-                                                                        : "미정"));
+                                meeting.getId(),
+                                meeting.getArea() != null ? meeting.getArea() : "미정", // spot
+                                meeting.getTitle(),
+                                meeting.getDate() != null ? meeting.getDate().toString() : "",
+                                List.of(
+                                        meeting.getAtmosphere() != null ? meeting.getAtmosphere().name()
+                                                : "기타",
+                                        meeting.getCategory() != null ? meeting.getCategory().name()
+                                                : "미정"));
                 }
 
                 return new modak.modakmodak.dto.MeetingListResponse(
-                                200,
-                                todayData,
-                                meetingDtos);
+                        200,
+                        todayData,
+                        meetingDtos);
         }
 
         @Transactional
         public modak.modakmodak.dto.MeetingApplicationResponse applyMeeting(Long userId, Long meetingId,
-                        modak.modakmodak.dto.MeetingApplicationRequest request) {
+                                                                            modak.modakmodak.dto.MeetingApplicationRequest request) {
                 // 1. 모임 존재 확인
                 Meeting meeting = meetingRepository.findById(meetingId)
-                                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모임입니다. ID: " + meetingId));
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모임입니다. ID: " + meetingId));
 
                 // 2. 유저 조회
                 modak.modakmodak.entity.User user = userRepository.findById(userId)
-                                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다. ID: " + userId));
+                        .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다. ID: " + userId));
 
                 // 3. 중복 신청 확인
                 if (participantRepository.existsByMeetingIdAndUserId(meetingId, userId)) {
@@ -212,38 +218,38 @@ public class MeetingService {
 
                 // 5. 참여 정보 저장
                 modak.modakmodak.entity.Participant participant = modak.modakmodak.entity.Participant.builder()
-                                .meeting(meeting)
-                                .user(user)
-                                .status(modak.modakmodak.entity.ParticipationStatus.PENDING)
-                                .isHost(false)
-                                .build();
+                        .meeting(meeting)
+                        .user(user)
+                        .status(modak.modakmodak.entity.ParticipationStatus.PENDING)
+                        .isHost(false)
+                        .build();
 
                 participantRepository.save(participant);
 
                 return new modak.modakmodak.dto.MeetingApplicationResponse(
-                                201,
-                                "참여 신청이 완료되었습니다.",
-                                new modak.modakmodak.dto.MeetingApplicationResponse.ApplicationData(
-                                                participant.getId(),
-                                                participant.getStatus().name()));
+                        201,
+                        "참여 신청이 완료되었습니다.",
+                        new modak.modakmodak.dto.MeetingApplicationResponse.ApplicationData(
+                                participant.getId(),
+                                participant.getStatus().name()));
         }
 
         @Transactional
         public modak.modakmodak.dto.MeetingApprovalResponse approveApplication(Long userId, Long meetingId,
-                        Long applicationId,
-                        modak.modakmodak.dto.MeetingApprovalRequest request) {
+                                                                               Long applicationId,
+                                                                               modak.modakmodak.dto.MeetingApprovalRequest request) {
 
                 // 0. 요청자가 해당 모임의 방장인지 확인
                 modak.modakmodak.entity.Participant host = participantRepository
-                                .findByMeetingIdAndIsHostTrue(meetingId);
+                        .findByMeetingIdAndIsHostTrue(meetingId);
                 if (host == null || !host.getUser().getId().equals(userId)) {
                         throw new IllegalArgumentException("승인 권한이 없습니다 (방장이 아닙니다).");
                 }
 
                 // 1. 신청서 조회
                 modak.modakmodak.entity.Participant participant = participantRepository.findById(applicationId)
-                                .orElseThrow(() -> new IllegalArgumentException(
-                                                "존재하지 않는 신청서입니다. ID: " + applicationId));
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "존재하지 않는 신청서입니다. ID: " + applicationId));
 
                 // 2. 모임 ID 검증
                 if (!participant.getMeeting().getId().equals(meetingId)) {
@@ -252,8 +258,12 @@ public class MeetingService {
 
                 // 3. 상태 업데이트
                 modak.modakmodak.entity.ParticipationStatus newStatus = modak.modakmodak.entity.ParticipationStatus
-                                .valueOf(request.status());
+                        .valueOf(request.status());
                 participant.updateStatus(newStatus);
+
+                if (newStatus == modak.modakmodak.entity.ParticipationStatus.APPROVED) {
+                        participant.updateGoal("어떤 목표를 이루어볼까요?"); // Participant 엔티티에 메서드가 있어야 합니다.
+                }
 
                 // 4. APPROVED 인 경우 정원 체크 (신청 시에도 체크하지만, 동시성 문제 등 대비)
                 if (newStatus == modak.modakmodak.entity.ParticipationStatus.APPROVED) {
@@ -272,47 +282,47 @@ public class MeetingService {
                 String nickname = (participant.getUser() != null) ? participant.getUser().getNickname() : "알수없음";
 
                 return new modak.modakmodak.dto.MeetingApprovalResponse(
-                                200,
-                                "신청자 승인 처리가 완료되었습니다.", // 거절일 경우 메시지 처리가 명세에 명확치 않으나, 일단 통일하거나 로직 분기 가능
-                                new modak.modakmodak.dto.MeetingApprovalResponse.ApprovalData(
-                                                participant.getId(),
-                                                nickname,
-                                                participant.getStatus().name(),
-                                                updatedCount));
+                        200,
+                        "신청자 승인 처리가 완료되었습니다.", // 거절일 경우 메시지 처리가 명세에 명확치 않으나, 일단 통일하거나 로직 분기 가능
+                        new modak.modakmodak.dto.MeetingApprovalResponse.ApprovalData(
+                                participant.getId(),
+                                nickname,
+                                participant.getStatus().name(),
+                                updatedCount));
         }
 
         @Transactional
         public modak.modakmodak.dto.MeetingStatusUpdateResponse updateMeetingStatus(Long userId, Long meetingId,
-                        modak.modakmodak.dto.MeetingStatusUpdateRequest request) {
+                                                                                    modak.modakmodak.dto.MeetingStatusUpdateRequest request) {
 
                 // 2. 해당 모임의 내 참여 정보 조회
                 modak.modakmodak.entity.Participant participant = participantRepository.findByMeetingId(meetingId)
-                                .stream()
-                                .filter(p -> p.getUser().getId().equals(userId))
-                                .findFirst()
-                                .orElseThrow(() -> new IllegalArgumentException("해당 모임에 참여하고 있지 않습니다."));
+                        .stream()
+                        .filter(p -> p.getUser().getId().equals(userId))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("해당 모임에 참여하고 있지 않습니다."));
 
                 // 3. 상태 배지 업데이트
                 participant.updateStatusBadge(request.statusBadge());
                 // participantRepository.save(participant); // Dirty Checking
 
                 return new modak.modakmodak.dto.MeetingStatusUpdateResponse(
-                                200,
-                                "상태 업데이트 성공",
-                                new modak.modakmodak.dto.MeetingStatusUpdateResponse.StatusData(
-                                                participant.getId(),
-                                                participant.getStatusBadge()));
+                        200,
+                        "상태 업데이트 성공",
+                        new modak.modakmodak.dto.MeetingStatusUpdateResponse.StatusData(
+                                participant.getId(),
+                                participant.getStatusBadge()));
         }
 
         @Transactional
         public modak.modakmodak.dto.MeetingCompleteResponse completeMeetingByHost(Long userId, Long meetingId) {
                 // 1. 모임 존재 확인
                 Meeting meeting = meetingRepository.findById(meetingId)
-                                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모임입니다. ID: " + meetingId));
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모임입니다. ID: " + meetingId));
 
                 // 2. 방장 권한 확인
                 modak.modakmodak.entity.Participant host = participantRepository
-                                .findByMeetingIdAndIsHostTrue(meetingId);
+                        .findByMeetingIdAndIsHostTrue(meetingId);
                 if (host == null || !host.getUser().getId().equals(userId)) {
                         throw new IllegalArgumentException("팟 종료 권한이 없습니다 (방장이 아닙니다).");
                 }
@@ -326,29 +336,29 @@ public class MeetingService {
                 meeting.completeMeeting();
 
                 return new modak.modakmodak.dto.MeetingCompleteResponse(
-                                200,
-                                "팟이 종료되었습니다.",
-                                new modak.modakmodak.dto.MeetingCompleteResponse.CompleteData(
-                                                meeting.getId(),
-                                                meeting.getIsCompleted()));
+                        200,
+                        "팟이 종료되었습니다.",
+                        new modak.modakmodak.dto.MeetingCompleteResponse.CompleteData(
+                                meeting.getId(),
+                                meeting.getIsCompleted()));
         }
 
         @Transactional
         public modak.modakmodak.dto.AttendanceCheckResponse checkAttendance(Long userId, Long meetingId,
-                        modak.modakmodak.dto.AttendanceCheckRequest request) {
+                                                                            modak.modakmodak.dto.AttendanceCheckRequest request) {
 
                 // 1. 요청자가 해당 모임의 팟장인지 확인
                 modak.modakmodak.entity.Participant host = participantRepository
-                                .findByMeetingIdAndIsHostTrue(meetingId);
+                        .findByMeetingIdAndIsHostTrue(meetingId);
                 if (host == null || !host.getUser().getId().equals(userId)) {
                         throw new IllegalArgumentException("출석 체크 권한이 없습니다 (팟장이 아닙니다).");
                 }
 
                 // 2. 참여자 조회
                 modak.modakmodak.entity.Participant participant = participantRepository
-                                .findById(request.participantId())
-                                .orElseThrow(() -> new IllegalArgumentException(
-                                                "존재하지 않는 참여자입니다. ID: " + request.participantId()));
+                        .findById(request.participantId())
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "존재하지 않는 참여자입니다. ID: " + request.participantId()));
 
                 // 3. 해당 참여자가 이 모임의 참여자인지 확인
                 if (!participant.getMeeting().getId().equals(meetingId)) {
@@ -363,13 +373,13 @@ public class MeetingService {
                 Long participantUserId = (participant.getUser() != null) ? participant.getUser().getId() : null;
 
                 return new modak.modakmodak.dto.AttendanceCheckResponse(
-                                200,
-                                "출석 체크가 완료되었습니다.",
-                                new modak.modakmodak.dto.AttendanceCheckResponse.AttendanceData(
-                                                participant.getId(),
-                                                participantUserId,
-                                                nickname,
-                                                participant.getAttended()));
+                        200,
+                        "출석 체크가 완료되었습니다.",
+                        new modak.modakmodak.dto.AttendanceCheckResponse.AttendanceData(
+                                participant.getId(),
+                                participantUserId,
+                                nickname,
+                                participant.getAttended()));
         }
 
         @Transactional
@@ -383,6 +393,20 @@ public class MeetingService {
                         throw new IllegalArgumentException("수정 권한이 없습니다 (방장이 아닙니다).");
                 }
 
-                meeting.updateDetail((modak.modakmodak.dto.MeetingUpdateDetailRequest) request);        }
+                meeting.updateDetail((modak.modakmodak.dto.MeetingUpdateDetailRequest) request);
+        }
 
+        @Transactional
+        public void updateParticipantGoal(Long userId, Long participantId, ParticipantGoalRequest request) {
+                Participant participant = participantRepository.findById(participantId)
+                        .orElseThrow(() -> new IllegalArgumentException("참여 정보를 찾을 수 없습니다."));
+
+                // 본인 확인
+                if (!participant.getUser().getId().equals(userId)) {
+                        throw new IllegalStateException("본인의 목표만 수정할 수 있습니다.");
+                }
+
+                participant.updateGoal(request.goal());
+        }
 }
+

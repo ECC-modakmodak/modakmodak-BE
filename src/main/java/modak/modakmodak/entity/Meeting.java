@@ -46,7 +46,6 @@ public class Meeting {
 
     @Column(columnDefinition = "TEXT")
     private String hostAnnouncement;
-    private String goal; // 팟 목표
 
     @Builder.Default
     private Boolean isCompleted = false; // 팟 종료 상태
@@ -61,7 +60,6 @@ public class Meeting {
         this.locationDetail = request.locationDetail();
         this.description = request.description();
         this.imageUrl = request.imageUrl();
-        this.goal = request.goal();
         this.hostAnnouncement = request.hostAnnouncement();
         this.status = "OPEN";
     }

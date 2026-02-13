@@ -11,8 +11,8 @@ VALUES (2, 'potato', 'pw123456', 'potato@example.com', '감자',
 
 -- 2. 모임 생성 (host_announcement 컬럼을 추가해야 합니다!)
 INSERT INTO meeting (id, user_id, title, category, atmosphere, max_participants, area, location_detail, host_announcement, date, status, description, image_url)
-VALUES (1, 1, '모닥모닥 첫 모임', 'STUDY', 'CHATTY', 5, '서울시 서대문구', '이화여대 ECC 1번 테이블',
-        '방장이 등록한 공지사항이 이곳에 표시됩니다.', -- 새로 추가한 내용
+VALUES (1, 1, '모닥모닥 첫 모임', 'CAFE', 'CHATTY', 5, '서울시 서대문구', '이화여대 ECC 1번 테이블',
+        '방장이 등록한 공지사항이 이곳에 표시됩니다.',
         '2026-02-20T19:00:00', 'AVAILABLE', '함께 열심히 코딩해요!',
         'https://modak-bucket.s3.ap-northeast-2.amazonaws.com/pod_1.png');
 

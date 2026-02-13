@@ -46,4 +46,8 @@ public class Participant {
     public void updateAttendance(Boolean attended) {
         this.attended = attended;
     }
+
+    public void updateGoal(String goal) {
+        this.goal = goal;
+    }
 }
