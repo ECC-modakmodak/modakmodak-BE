@@ -61,9 +61,9 @@ public class MeetingService {
 
                 String imageUrl = request.imageUrl();
                 if (imageUrl == null || imageUrl.isBlank()) {
-                        // pod_1 ~ pod_4 중 하나를 랜덤하게 선택
+                        // 1~4번 중 하나로 가짜 이미지 링크 생성 (연습용 서비스 활용)
                         int randomNum = (int) (Math.random() * 4) + 1;
-                        imageUrl = "https://modak-bucket.s3.ap-northeast-2.amazonaws.com/pod_" + randomNum + ".png";
+                        imageUrl = "https://picsum.photos/seed/" + randomNum + "/400/300";
                 }
 
                 meeting.updateDetails(request);
