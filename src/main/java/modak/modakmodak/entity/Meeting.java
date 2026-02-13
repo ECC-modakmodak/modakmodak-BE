@@ -45,7 +45,7 @@ public class Meeting {
     private String imageUrl;
 
     @Column(columnDefinition = "TEXT")
-    private String goal; // 팟 목표
+    private String hostAnnouncement;
 
     @Builder.Default
     private Boolean isCompleted = false; // 팟 종료 상태
@@ -60,8 +60,21 @@ public class Meeting {
         this.locationDetail = request.locationDetail();
         this.description = request.description();
         this.imageUrl = request.imageUrl();
-        this.goal = request.goal();
+        this.hostAnnouncement = request.hostAnnouncement();
         this.status = "OPEN";
+    }
+
+    // 팟 상세 정보 부분 수정을 위한 메서드 추가
+    public void updateDetail(modak.modakmodak.dto.MeetingUpdateDetailRequest request) {
+        if (request.area() != null) {
+            this.area = request.area();
+        }
+        if (request.locationDetail() != null) {
+            this.locationDetail = request.locationDetail();
+        }
+        if (request.hostAnnouncement() != null) {
+            this.hostAnnouncement = request.hostAnnouncement();
+        }
     }
 
     // 팟 종료 메서드
