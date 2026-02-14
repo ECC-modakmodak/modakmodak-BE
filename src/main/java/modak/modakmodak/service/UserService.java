@@ -90,7 +90,7 @@ public class UserService {
                                                                                                          // 생성
                                 .email(email)
                                 .nickname(name != null ? name : "구글사용자")
-                                .profileImage(pictureUrl)
+                                .profileImage("profile_default.png")
                                 .provider("GOOGLE")
                                 .providerId(providerId)
                                 .attendanceRate(0)
@@ -108,7 +108,7 @@ public class UserService {
                             .username(user.getUsername())
                             .email(user.getEmail())
                             .nickname(user.getNickname())
-                            .profileImage(user.getProfileImage())
+                            .profileImage("profile_default.png")
                             .provider(user.getProvider())
                             .build())
                     .build();
