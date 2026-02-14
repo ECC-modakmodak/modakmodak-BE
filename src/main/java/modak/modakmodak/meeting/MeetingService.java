@@ -14,6 +14,9 @@ import modak.modakmodak.entity.ParticipationStatus;
 import java.util.stream.Collectors;
 import modak.modakmodak.dto.MeetingUpdateDetailRequest;
 import modak.modakmodak.dto.ParticipantGoalRequest;
+import java.util.List;
+import java.util.ArrayList;
+
 
 @Service
 @RequiredArgsConstructor
@@ -60,11 +63,6 @@ public class MeetingService {
                         throw new IllegalArgumentException("모임 설정 권한이 없습니다.");
                 }
 
-                String imageUrl = request.imageUrl();
-                if (imageUrl == null || imageUrl.isBlank()) {
-                        imageUrl="pod_1.png";
-                }
-
                 meeting.updateDetails(request);
         }
 
@@ -85,6 +83,10 @@ public class MeetingService {
                                 String displayedGoal = (p.getGoal() != null && !p.getGoal().isBlank())
                                         ? p.getGoal() : null;
 
+                                List<String> hashtags = new ArrayList<>();
+                                if (user.getPreferredType() != null) hashtags.add(user.getPreferredType().name());
+                                if (user.getPreferredMethod() != null) hashtags.add(user.getPreferredMethod().name());
+
                                 return new MeetingDetailResponse.MemberDetail(
                                         user.getId(),
                                         user.getNickname(),
@@ -93,7 +95,9 @@ public class MeetingService {
                                         user.getTargetMessage() != null ? user.getTargetMessage() : "기본 목표가 없습니다.", // 회원가입 시 적은 목표
                                         p.getGoal() != null,
                                         displayedGoal,
-                                        p.getReactionEmoji() != null ? p.getReactionEmoji().name() : null,                                        p.getAttended() != null ? p.getAttended() : false);
+                                        p.getReactionEmoji() != null ? p.getReactionEmoji().name() : null,
+                                        p.getAttended() != null ? p.getAttended() : false,
+                                        hashtags);
                         }).collect(Collectors.toList());
 
                 // 4. 현재 조회 중인 유저의 상태 찾기
