@@ -8,8 +8,9 @@ import modak.modakmodak.entity.User;
 import modak.modakmodak.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import modak.modakmodak.dto.MeetingUpdateDetailRequest;
 
-@Service // ◀ 이제 인텔리제이가 이 어노테이션을 인식합니다.
+@Service
 @RequiredArgsConstructor
 @Transactional
 public class UserService {
@@ -51,7 +52,7 @@ public class UserService {
                 .profileImage(dummyProfile)
                 .build();
 
-        return userRepository.save(user).getId(); // ◀ DB에 실제 저장되는 지점
+        return userRepository.save(user).getId();
     }
 
     @Transactional(readOnly = true)

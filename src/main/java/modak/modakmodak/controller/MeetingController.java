@@ -9,6 +9,7 @@ import modak.modakmodak.dto.MeetingDetailResponse;
 import modak.modakmodak.meeting.MeetingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import modak.modakmodak.dto.MeetingUpdateDetailRequest;
 
 @Tag(name = "Meeting", description = "모임 개설 API")
 @RestController
@@ -96,5 +97,15 @@ public class MeetingController {
             @PathVariable Long meetingId,
             @RequestBody modak.modakmodak.dto.AttendanceCheckRequest request) {
         return ResponseEntity.ok(meetingService.checkAttendance(userId, meetingId, request));
+    }
+
+    @Operation(summary = "모임 상세 정보 부분 수정", description = "방장이 지역, 장소, 공지사항을 선택적으로 수정합니다.")
+    @PatchMapping("/{meetingId}/details/update") // 기존 complete와 경로 중복 방지를 위해 수정
+    public ResponseEntity<String> updateMeetingDetail(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+            @PathVariable Long meetingId,
+            @RequestBody MeetingUpdateDetailRequest request) {
+        meetingService.updateMeetingDetail(userId, meetingId, request);
+        return ResponseEntity.ok("모임 정보가 성공적으로 수정되었습니다.");
     }
 }
