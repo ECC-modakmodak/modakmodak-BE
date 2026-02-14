@@ -93,8 +93,7 @@ public class MeetingService {
                                         user.getTargetMessage() != null ? user.getTargetMessage() : "기본 목표가 없습니다.", // 회원가입 시 적은 목표
                                         p.getGoal() != null,
                                         displayedGoal,
-                                        p.getReactionEmoji() != null ? p.getReactionEmoji().name() : "",
-                                        p.getAttended() != null ? p.getAttended() : false);
+                                        p.getReactionEmoji() != null ? p.getReactionEmoji().name() : null,                                        p.getAttended() != null ? p.getAttended() : false);
                         }).collect(Collectors.toList());
 
                 // 4. 현재 조회 중인 유저의 상태 찾기
