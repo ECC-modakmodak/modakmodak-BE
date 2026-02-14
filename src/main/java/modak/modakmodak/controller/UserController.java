@@ -16,6 +16,8 @@ import modak.modakmodak.dto.FindPwRequest;
 import modak.modakmodak.dto.ResetPwRequest;
 import modak.modakmodak.dto.WithdrawRequest;
 import modak.modakmodak.dto.UserLoginRequest;
+import java.util.List;
+import java.util.ArrayList;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -175,11 +177,11 @@ public class UserController {
     }
 
     @Operation(summary = "프로필 조회", description = "사용자의 프로필 정보를 가져옵니다.")
-    @GetMapping("/profile/{userId}")
-    public ResponseEntity<Map<String, Object>> getProfile(@PathVariable String userId) {
+    @GetMapping("/profile/{username}")
+    public ResponseEntity<Map<String, Object>> getProfile(@PathVariable String username) {
 
         // 1. DB에서 사용자 아이디로 정보를 찾습니다.
-        Optional<User> userOptional = userRepository.findByUsername(userId);
+        Optional<User> userOptional = userRepository.findByUsername(username);
 
         if (userOptional.isPresent()) {
             User user = userOptional.get();
@@ -196,6 +198,19 @@ public class UserController {
             data.put("targetMessage", user.getTargetMessage() != null ? user.getTargetMessage() : "");
             data.put("preferredType", user.getPreferredType() != null ? user.getPreferredType() : "");
             data.put("activityArea", user.getActivityArea() != null ? user.getActivityArea() : "");
+
+            // ---  해시태그 리스트 만들기 ---
+            List<String> hashtags = new ArrayList<>();
+
+            if (user.getPreferredType() != null) {
+                hashtags.add(user.getPreferredType().name());
+            }
+
+            if (user.getPreferredMethod() != null) {
+                hashtags.add(user.getPreferredMethod().name());
+            }
+
+            data.put("hashtags", hashtags); // ◀ ["CHATTY", "대면"] 형태로 들어감
 
             return ResponseEntity.ok(Map.of(
                     "status", 200,

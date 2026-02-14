@@ -36,7 +36,8 @@ public record MeetingDetailResponse(
                         boolean hasGoal,
                         String displayedGoal,
                         String statusBadge,
-                        boolean attended ){
+                        boolean attended,
+                        List<String> hashtags){
         }
 
         public record UserStatus(
