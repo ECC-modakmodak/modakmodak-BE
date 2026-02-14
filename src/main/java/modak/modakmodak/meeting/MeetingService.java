@@ -258,9 +258,6 @@ public class MeetingService {
                         .valueOf(request.status());
                 participant.updateStatus(newStatus);
 
-                if (newStatus == modak.modakmodak.entity.ParticipationStatus.APPROVED) {
-                        participant.updateGoal("어떤 목표를 이루어볼까요?"); // Participant 엔티티에 메서드가 있어야 합니다.
-                }
 
                 if (newStatus == modak.modakmodak.entity.ParticipationStatus.APPROVED) {
                         participant.updateGoal(null); // 방장이 승인하면 목표를 일단 null로 초기화
@@ -292,29 +289,6 @@ public class MeetingService {
                                 updatedCount));
         }
 
-        @Transactional
-        public modak.modakmodak.dto.MeetingStatusUpdateResponse updateMeetingStatus(Long userId, Long meetingId,
-                                                                                    modak.modakmodak.dto.MeetingStatusUpdateRequest request) {
-
-                // 1. 해당 모임의 내 참여 정보 조회
-                modak.modakmodak.entity.Participant participant = participantRepository.findByMeetingId(meetingId)
-                        .stream()
-                        .filter(p -> p.getUser().getId().equals(userId))
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalArgumentException("해당 모임에 참여하고 있지 않습니다."));
-
-                // 2. [수정] statusBadge 대신 Enum 타입을 사용하여 업데이트
-                // 프론트에서 보내주는 문자열을 Enum으로 변환하여 저장합니다.
-                modak.modakmodak.entity.ReactionEmoji emoji = modak.modakmodak.entity.ReactionEmoji.valueOf(request.statusBadge());
-                participant.setReactionEmoji(emoji); // Participant 엔티티의 필드에 직접 세팅
-
-                return new modak.modakmodak.dto.MeetingStatusUpdateResponse(
-                        200,
-                        "상태 업데이트 성공",
-                        new modak.modakmodak.dto.MeetingStatusUpdateResponse.StatusData(
-                                participant.getId(),
-                                participant.getReactionEmoji().name())); // ◀ 응답은 다시 이름(문자열)으로
-        }
 
         @Transactional
         public modak.modakmodak.dto.MeetingCompleteResponse completeMeetingByHost(Long userId, Long meetingId) {
@@ -396,19 +370,6 @@ public class MeetingService {
                 }
 
                 meeting.updateDetail((modak.modakmodak.dto.MeetingUpdateDetailRequest) request);
-        }
-
-        @Transactional
-        public void updateParticipantGoal(Long userId, Long participantId, ParticipantGoalRequest request) {
-                Participant participant = participantRepository.findById(participantId)
-                        .orElseThrow(() -> new IllegalArgumentException("참여 정보를 찾을 수 없습니다."));
-
-                // 본인 확인
-                if (!participant.getUser().getId().equals(userId)) {
-                        throw new IllegalStateException("본인의 목표만 수정할 수 있습니다.");
-                }
-
-                participant.updateGoal(request.goal());
         }
 }
 
