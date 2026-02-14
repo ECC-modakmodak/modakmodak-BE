@@ -236,7 +236,7 @@ public class MeetingService {
                                                                                Long applicationId,
                                                                                modak.modakmodak.dto.MeetingApprovalRequest request) {
 
-                // 0. 요청자가 해당 모임의 방장인지 확인
+                // 요청자가 해당 모임의 방장인지 확인
                 modak.modakmodak.entity.Participant host = participantRepository
                         .findByMeetingIdAndIsHostTrue(meetingId);
                 if (host == null || !host.getUser().getId().equals(userId)) {
@@ -248,12 +248,12 @@ public class MeetingService {
                         .orElseThrow(() -> new IllegalArgumentException(
                                 "존재하지 않는 신청서입니다. ID: " + applicationId));
 
-                // 2. 모임 ID 검증
+                // 모임 ID 검증
                 if (!participant.getMeeting().getId().equals(meetingId)) {
                         throw new IllegalArgumentException("해당 모임의 신청서가 아닙니다.");
                 }
 
-                // 3. 상태 업데이트
+                // 상태 업데이트
                 modak.modakmodak.entity.ParticipationStatus newStatus = modak.modakmodak.entity.ParticipationStatus
                         .valueOf(request.status());
                 participant.updateStatus(newStatus);
@@ -262,7 +262,11 @@ public class MeetingService {
                         participant.updateGoal("어떤 목표를 이루어볼까요?"); // Participant 엔티티에 메서드가 있어야 합니다.
                 }
 
-                // 4. APPROVED 인 경우 정원 체크 (신청 시에도 체크하지만, 동시성 문제 등 대비)
+                if (newStatus == modak.modakmodak.entity.ParticipationStatus.APPROVED) {
+                        participant.updateGoal(null); // 방장이 승인하면 목표를 일단 null로 초기화
+                }
+
+                //  APPROVED 인 경우 정원 체크 (신청 시에도 체크하지만, 동시성 문제 등 대비)
                 if (newStatus == modak.modakmodak.entity.ParticipationStatus.APPROVED) {
                         int currentCount = participantRepository.countByMeetingId(meetingId);
                         if (currentCount > participant.getMeeting().getMaxParticipants()) {
@@ -271,10 +275,10 @@ public class MeetingService {
                         }
                 }
 
-                // 5. 변경 사항 저장 (Dirty Checking으로 자동 저장되지만 명시적으로 호출해도 무방)
+                // 변경 사항 저장 (Dirty Checking으로 자동 저장되지만 명시적으로 호출해도 무방)
                 participantRepository.save(participant);
 
-                // 6. 현재 인원 다시 계산
+                // 현재 인원 다시 계산
                 int updatedCount = participantRepository.countByMeetingId(meetingId);
                 String nickname = (participant.getUser() != null) ? participant.getUser().getNickname() : "알수없음";
 
@@ -292,23 +296,24 @@ public class MeetingService {
         public modak.modakmodak.dto.MeetingStatusUpdateResponse updateMeetingStatus(Long userId, Long meetingId,
                                                                                     modak.modakmodak.dto.MeetingStatusUpdateRequest request) {
 
-                // 2. 해당 모임의 내 참여 정보 조회
+                // 1. 해당 모임의 내 참여 정보 조회
                 modak.modakmodak.entity.Participant participant = participantRepository.findByMeetingId(meetingId)
                         .stream()
                         .filter(p -> p.getUser().getId().equals(userId))
                         .findFirst()
                         .orElseThrow(() -> new IllegalArgumentException("해당 모임에 참여하고 있지 않습니다."));
 
-                // 3. 상태 배지 업데이트
-                participant.updateStatusBadge(request.statusBadge());
-                // participantRepository.save(participant); // Dirty Checking
+                // 2. [수정] statusBadge 대신 Enum 타입을 사용하여 업데이트
+                // 프론트에서 보내주는 문자열을 Enum으로 변환하여 저장합니다.
+                modak.modakmodak.entity.ReactionEmoji emoji = modak.modakmodak.entity.ReactionEmoji.valueOf(request.statusBadge());
+                participant.setReactionEmoji(emoji); // Participant 엔티티의 필드에 직접 세팅
 
                 return new modak.modakmodak.dto.MeetingStatusUpdateResponse(
                         200,
                         "상태 업데이트 성공",
                         new modak.modakmodak.dto.MeetingStatusUpdateResponse.StatusData(
                                 participant.getId(),
-                                participant.getStatusBadge()));
+                                participant.getReactionEmoji().name())); // ◀ 응답은 다시 이름(문자열)으로
         }
 
         @Transactional
