@@ -34,6 +34,9 @@ public class UserService {
         // 비밀번호 유효성 검증
         modak.modakmodak.util.PasswordValidator.validate(request.password());
 
+        // 더미 프로필 이미지 생성
+        String dummyProfile = "https://ui-avatars.com/api/?name=" + request.nickname();
+
         // 2. 새로운 유저 엔티티 생성 및 저장
         User user = User.builder()
                 .username(request.username())
@@ -45,7 +48,7 @@ public class UserService {
                 .preferredMethod(request.preferredMethod()) // 대면/비대면 (Enum)
                 .activityArea(request.activityArea()) // 활동 지역
                 .targetMessage(request.targetMessage()) // 나의 목표
-                .profileImage("https://default-image.png")
+                .profileImage(dummyProfile)
                 .build();
 
         return userRepository.save(user).getId(); // ◀ DB에 실제 저장되는 지점
