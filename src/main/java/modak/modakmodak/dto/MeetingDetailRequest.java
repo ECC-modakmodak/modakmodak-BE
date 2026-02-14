@@ -7,6 +7,10 @@ public record MeetingDetailRequest(
                 String locationDetail,
                 String description,
                 String imageUrl,
-                String hostAnnouncement
+                String hostAnnouncement,
+                modak.modakmodak.entity.MeetingAtmosphere atmosphere,
+                modak.modakmodak.entity.MeetingCategory category,
+                String categoryEtc,
+                int maxParticipants
 ) {
 }
