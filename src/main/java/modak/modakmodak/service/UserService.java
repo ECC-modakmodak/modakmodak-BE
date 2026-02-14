@@ -32,7 +32,7 @@ public class UserService {
                     throw new IllegalStateException("이미 가입된 이메일입니다.");
                 });
 
-        String dummyProfile = "https://ui-avatars.com/api/?name=" + request.nickname();
+        String Profile = "profile_default.png";
 
         // 2. 새로운 유저 엔티티 생성 및 저장
         User user = User.builder()
@@ -45,7 +45,7 @@ public class UserService {
                 .preferredMethod(request.preferredMethod()) // 대면/비대면 (Enum)
                 .activityArea(request.activityArea()) // 활동 지역
                 .targetMessage(request.targetMessage()) // 나의 목표
-                .profileImage(dummyProfile)
+                .profileImage(Profile)
                 .build();
 
         return userRepository.save(user).getId();

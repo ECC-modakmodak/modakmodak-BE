@@ -64,7 +64,7 @@ public class Meeting {
         this.area = request.area();
         this.locationDetail = request.locationDetail();
         this.description = request.description();
-        this.imageUrl = request.imageUrl();
+        this.imageUrl = "pod_1.png";
         this.hostAnnouncement = request.hostAnnouncement();
         this.status = "OPEN";
         this.atmosphere = request.atmosphere();

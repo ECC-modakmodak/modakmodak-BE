@@ -62,9 +62,7 @@ public class MeetingService {
 
                 String imageUrl = request.imageUrl();
                 if (imageUrl == null || imageUrl.isBlank()) {
-                        // 1~4번 중 하나로 가짜 이미지 링크 생성 (연습용 서비스 활용)
-                        int randomNum = (int) (Math.random() * 4) + 1;
-                        imageUrl = "https://picsum.photos/seed/" + randomNum + "/400/300";
+                        imageUrl="pod_1.png";
                 }
 
                 meeting.updateDetails(request);
@@ -85,7 +83,7 @@ public class MeetingService {
                                 User user = p.getUser();
 
                                 String displayedGoal = (p.getGoal() != null && !p.getGoal().isBlank())
-                                        ? p.getGoal() : "어떤 목표를 이루어볼까요?";
+                                        ? p.getGoal() : null;
 
                                 return new MeetingDetailResponse.MemberDetail(
                                         user.getId(),
@@ -156,8 +154,7 @@ public class MeetingService {
                                 meeting.getId(),
                                 meeting.getTitle(),
                                 meeting.getCreatedAt() != null ? meeting.getCreatedAt().toString() : "",
-                                "https://modak-bucket.s3.amazonaws.com/default-meeting.png",
-                                hostNickname,
+                                meeting.getImageUrl() != null ? meeting.getImageUrl() : "pod_1.png",                                hostNickname,
                                 count,
                                 meeting.getMaxParticipants(),
                                 location,
