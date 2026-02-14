@@ -73,15 +73,6 @@ public class MeetingController {
         return ResponseEntity.ok(meetingService.approveApplication(userId, meetingId, applicationId, request));
     }
 
-    @Operation(summary = "모임방 상태 업데이트", description = "참여자가 자신의 상태 배지(예: 집중하고 있어요)를 변경합니다.")
-    @PatchMapping("/{meetingId}/status")
-    public ResponseEntity<modak.modakmodak.dto.MeetingStatusUpdateResponse> updateMeetingStatus(
-            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
-            @PathVariable Long meetingId,
-            @RequestBody modak.modakmodak.dto.MeetingStatusUpdateRequest request) {
-        return ResponseEntity.ok(meetingService.updateMeetingStatus(userId, meetingId, request));
-    }
-
     @Operation(summary = "팟 종료", description = "방장이 팟을 종료합니다.")
     @PatchMapping("/{meetingId}/complete")
     public ResponseEntity<modak.modakmodak.dto.MeetingCompleteResponse> completeMeeting(

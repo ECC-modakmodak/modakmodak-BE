@@ -37,17 +37,15 @@ public class Participant {
         this.status = status;
     }
 
-    private String statusBadge; // "집중하고 있어요", "도착했어요" 등 상태 메시지
-
-    public void updateStatusBadge(String statusBadge) {
-        this.statusBadge = statusBadge;
-    }
-
     public void updateAttendance(Boolean attended) {
         this.attended = attended;
     }
 
     public void updateGoal(String goal) {
         this.goal = goal;
+    }
+
+    public void setReactionEmoji(ReactionEmoji reactionEmoji) {
+        this.reactionEmoji = reactionEmoji;
     }
 }

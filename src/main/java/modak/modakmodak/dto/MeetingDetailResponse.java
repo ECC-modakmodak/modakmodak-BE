@@ -35,7 +35,7 @@ public record MeetingDetailResponse(
                         String targetMessage,
                         boolean hasGoal,
                         String displayedGoal,
-                        String reactionEmoji,
+                        String statusBadge,
                         boolean attended ){
         }
 

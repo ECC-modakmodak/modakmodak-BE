@@ -64,7 +64,7 @@ public class Meeting {
         this.area = request.area();
         this.locationDetail = request.locationDetail();
         this.description = request.description();
-        this.imageUrl = request.imageUrl();
+        this.imageUrl = "pod_1.png";
         this.hostAnnouncement = request.hostAnnouncement();
         this.status = "OPEN";
         this.atmosphere = request.atmosphere();
@@ -80,7 +80,7 @@ public class Meeting {
         if (request.area() != null) this.area = request.area();
         if (request.locationDetail() != null) this.locationDetail = request.locationDetail();
         if (request.description() != null) this.description = request.description();
-        if (request.imageUrl() != null) this.imageUrl = request.imageUrl();
+        this.imageUrl = "pod_1.png";
         if (request.hostAnnouncement() != null) this.hostAnnouncement = request.hostAnnouncement();
 
         // 초기 세팅 정보 (atmosphere, category 등 에러 해결 부분)
