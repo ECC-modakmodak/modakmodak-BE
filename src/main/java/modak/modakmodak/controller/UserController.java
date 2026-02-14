@@ -114,6 +114,9 @@ public class UserController {
 
             // 2. 현재 비밀번호가 일치하는지 확인 (보안을 위한 필수 절차)
             if (foundUser.getPassword().equals(request.oldPassword())) {
+                // 새 비밀번호 유효성 검증
+                modak.modakmodak.util.PasswordValidator.validate(request.newPassword());
+
                 foundUser.setPassword(request.newPassword()); // 새로운 비밀번호 세팅
                 userRepository.save(foundUser); // DB 업데이트
                 return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");

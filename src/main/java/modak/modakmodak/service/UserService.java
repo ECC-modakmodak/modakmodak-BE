@@ -32,6 +32,10 @@ public class UserService {
                     throw new IllegalStateException("이미 가입된 이메일입니다.");
                 });
 
+        // 비밀번호 유효성 검증
+        modak.modakmodak.util.PasswordValidator.validate(request.password());
+
+        // 더미 프로필 이미지 생성
         String Profile = "profile_default.png";
 
         // 2. 새로운 유저 엔티티 생성 및 저장
