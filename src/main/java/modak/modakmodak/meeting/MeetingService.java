@@ -396,4 +396,31 @@ public class MeetingService {
 
                 meeting.updateDetail((modak.modakmodak.dto.MeetingUpdateDetailRequest) request);
         }
+
+        @Transactional
+        public void removeParticipant(Long userId, Long meetingId, Long participantId) {
+                // 1. 요청자가 호스트인지 확인
+                modak.modakmodak.entity.Participant host = participantRepository
+                                .findByMeetingIdAndIsHostTrue(meetingId);
+                if (host == null || !host.getUser().getId().equals(userId)) {
+                        throw new IllegalArgumentException("참가자 삭제 권한이 없습니다 (팟장이 아닙니다).");
+                }
+
+                // 2. 삭제할 참가자 조회
+                modak.modakmodak.entity.Participant participant = participantRepository.findById(participantId)
+                                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 참가자입니다."));
+
+                // 3. 해당 모임의 참가자인지 확인
+                if (!participant.getMeeting().getId().equals(meetingId)) {
+                        throw new IllegalArgumentException("해당 모임의 참가자가 아닙니다.");
+                }
+
+                // 4. 호스트는 삭제할 수 없음
+                if (participant.isHost()) {
+                        throw new IllegalArgumentException("팟장은 삭제할 수 없습니다.");
+                }
+
+                // 5. 참가자 삭제
+                participantRepository.delete(participant);
+        }
 }
