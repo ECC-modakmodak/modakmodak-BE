@@ -75,8 +75,13 @@ public class UserController {
     @PostMapping("/login/google")
     public ResponseEntity<?> loginWithGoogle(@RequestBody modak.modakmodak.dto.GoogleLoginRequest request) {
         try {
-            modak.modakmodak.dto.LoginResponse response = userService.loginWithGoogle(request.idToken());
-            return ResponseEntity.status(201).body(response);
+            var result = userService.loginWithGoogle(request.idToken());
+
+            return ResponseEntity.status(201).body(new UserLoginResponse(
+                    result.user().userId(),    // 구글 유저 ID
+                    result.user().nickname(),  // 구글 유저 닉네임
+                    "구글 로그인 성공!"
+            ));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(401).body(Map.of(
                     "status", 401,
