@@ -125,4 +125,14 @@ public class MeetingController {
         meetingService.updateLocationDetail(userId, meetingId, request.locationDetail());
         return ResponseEntity.ok("상세 장소가 성공적으로 수정되었습니다.");
     }
+
+    @Operation(summary = "참가자 삭제", description = "팟장이 참가자를 삭제합니다.")
+    @DeleteMapping("/{meetingId}/participants/{participantId}")
+    public ResponseEntity<Void> removeParticipant(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+            @PathVariable Long meetingId,
+            @PathVariable Long participantId) {
+        meetingService.removeParticipant(userId, meetingId, participantId);
+        return ResponseEntity.ok().build();
+    }
 }
