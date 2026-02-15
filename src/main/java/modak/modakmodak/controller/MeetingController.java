@@ -93,7 +93,7 @@ public class MeetingController {
         return ResponseEntity.ok(meetingService.checkAttendance(userId, meetingId, request));
     }
 
-    // 1. 공지사항만 수정
+    // 공지사항만 수정
     @Operation(summary = "모임 공지사항 수정", description = "방장이 모임의 공지사항을 수정합니다.")
     @PatchMapping("/{meetingId}/host-announcement")
     public ResponseEntity<String> updateHostAnnouncement(
@@ -104,7 +104,7 @@ public class MeetingController {
         return ResponseEntity.ok("공지사항이 성공적으로 수정되었습니다.");
     }
 
-    // 2. 모임 날짜만 수정
+    // 모임 날짜만 수정
     @Operation(summary = "모임 날짜 수정", description = "방장이 모임의 날짜와 시간을 수정합니다.")
     @PatchMapping("/{meetingId}/date")
     public ResponseEntity<String> updateDate(
@@ -115,7 +115,7 @@ public class MeetingController {
         return ResponseEntity.ok("모임 날짜가 성공적으로 수정되었습니다.");
     }
 
-    // 3. 상세 장소만 수정
+    // 상세 장소만 수정
     @Operation(summary = "모임 상세장소 수정", description = "방장이 모임의 상세 장소를 수정합니다.")
     @PatchMapping("/{meetingId}/location-detail")
     public ResponseEntity<String> updateLocationDetail(
