@@ -25,3 +25,10 @@ google:
   oauth:
     client-id: ${GOOGLE_CLIENT_ID:your-client-id}
     client-secret: ${GOOGLE_CLIENT_SECRET:your-client-secret}
+
+sql:
+  init:
+    mode: always # 서버 뜰 때 항상 실행
+    data-locations: classpath:data.sql # data.sql 파일을 읽어라
+  jpa:
+    defer-datasource-initialization: true
