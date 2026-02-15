@@ -24,6 +24,14 @@ public class NotificationController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "미열람 알림 개수 조회", description = "읽지 않은 알림의 개수를 조회합니다.")
+    @GetMapping("/unread-count")
+    public ResponseEntity<modak.modakmodak.dto.UnreadNotificationCountResponse> getUnreadCount(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId) {
+        modak.modakmodak.dto.UnreadNotificationCountResponse response = notificationService.getUnreadCount(userId);
+        return ResponseEntity.ok(response);
+    }
+
     @Operation(summary = "알림 읽음 처리", description = "알림을 읽음 처리합니다.")
     @PatchMapping("/{notificationId}/read")
     public ResponseEntity<modak.modakmodak.dto.NotificationReadResponse> markNotificationAsRead(

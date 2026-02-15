@@ -30,10 +30,19 @@ public class NotificationService {
                         notification.getMessage(),
                         notification.getIsRead(),
                         notification.getRelatedId(),
+                        notification.getSenderNickname(),
+                        notification.getPodName(),
+                        notification.getProfileImage(),
                         notification.getCreatedAt().toString()))
                 .toList();
 
         return new NotificationListResponse(notificationDtos);
+    }
+
+    @Transactional(readOnly = true)
+    public modak.modakmodak.dto.UnreadNotificationCountResponse getUnreadCount(Long userId) {
+        int unreadCount = notificationRepository.countByUserIdAndIsReadFalse(userId);
+        return new modak.modakmodak.dto.UnreadNotificationCountResponse(unreadCount);
     }
 
     @Transactional
