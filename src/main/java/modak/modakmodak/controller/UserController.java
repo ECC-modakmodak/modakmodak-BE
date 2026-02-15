@@ -46,8 +46,8 @@ public class UserController {
         }
 
         // 서비스의 join 로직을 사용하면 사진 로직까지 한 번에 처리됩니다.
-        userService.join(request);
-        return ResponseEntity.ok("회원가입 성공!");
+        Long savedUserId = userService.join(request);
+        return ResponseEntity.ok("회원가입 성공! ID:" + savedUserId);
     }
 
     // 2. 로그인
