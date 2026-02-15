@@ -11,17 +11,18 @@ VALUES (2, 'potato', 'pw123456', 'potato@example.com', '감자',
 
 INSERT INTO users (id, username, password, email, nickname, profile_image, preferred_type, preferred_method, activity_area, target_message, attendance_rate)
 VALUES (3, 'modaki', 'modak123456', 'modaki@example.com', '모다기',
+
         'profile_default.png',
         'CHATTY', '비대면', '서울시 용산구', '열심히 공부하기!', 0);
 
 
 INSERT INTO users (id, username, password, email, nickname, profile_image, preferred_type, preferred_method, activity_area, target_message, attendance_rate)
-VALUES (5, 'study', 'study123456', 'study@example.com', '공부좀하자',
+VALUES (4, 'study', 'study123456', 'study@example.com', '공부좀하자',
         'profile_default.png',
         'QUIET', '대면', '서울시 구로구', '공부 해보자!', 0);
 
 INSERT INTO users (id, username, password, email, nickname, profile_image, preferred_type, preferred_method, activity_area, target_message, attendance_rate)
-VALUES (6, 'sleep', 'sl123456', 'sleep@example.com', '자고싶어요',
+VALUES (5, 'sleep', 'sl123456', 'sleep@example.com', '자고싶어요',
         'profile_default.png',
         'QUIET', '대면', '서울시 서대문구', '공부 마스터!', 0);
 

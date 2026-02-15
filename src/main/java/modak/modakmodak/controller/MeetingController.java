@@ -10,6 +10,9 @@ import modak.modakmodak.meeting.MeetingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import modak.modakmodak.dto.MeetingUpdateDetailRequest;
+import modak.modakmodak.dto.HostAnnouncementUpdateRequest;
+import modak.modakmodak.dto.DateUpdateRequest;
+import modak.modakmodak.dto.LocationDetailUpdateRequest;
 
 @Tag(name = "Meeting", description = "모임 개설 API")
 @RestController
@@ -90,13 +93,36 @@ public class MeetingController {
         return ResponseEntity.ok(meetingService.checkAttendance(userId, meetingId, request));
     }
 
-    @Operation(summary = "모임 상세 정보 부분 수정", description = "방장이 지역, 장소, 공지사항을 선택적으로 수정합니다.")
-    @PatchMapping("/{meetingId}/details/update") // 기존 complete와 경로 중복 방지를 위해 수정
-    public ResponseEntity<String> updateMeetingDetail(
+    // 1. 공지사항만 수정
+    @Operation(summary = "모임 공지사항 수정", description = "방장이 모임의 공지사항을 수정합니다.")
+    @PatchMapping("/{meetingId}/host-announcement")
+    public ResponseEntity<String> updateHostAnnouncement(
             @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
             @PathVariable Long meetingId,
-            @RequestBody MeetingUpdateDetailRequest request) {
-        meetingService.updateMeetingDetail(userId, meetingId, request);
-        return ResponseEntity.ok("모임 정보가 성공적으로 수정되었습니다.");
+            @RequestBody HostAnnouncementUpdateRequest request) {
+        meetingService.updateHostAnnouncement(userId, meetingId, request.hostAnnouncement());
+        return ResponseEntity.ok("공지사항이 성공적으로 수정되었습니다.");
+    }
+
+    // 2. 모임 날짜만 수정
+    @Operation(summary = "모임 날짜 수정", description = "방장이 모임의 날짜와 시간을 수정합니다.")
+    @PatchMapping("/{meetingId}/date")
+    public ResponseEntity<String> updateDate(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+            @PathVariable Long meetingId,
+            @RequestBody DateUpdateRequest request) {
+        meetingService.updateDate(userId, meetingId, request.date());
+        return ResponseEntity.ok("모임 날짜가 성공적으로 수정되었습니다.");
+    }
+
+    // 3. 상세 장소만 수정
+    @Operation(summary = "모임 상세장소 수정", description = "방장이 모임의 상세 장소를 수정합니다.")
+    @PatchMapping("/{meetingId}/location-detail")
+    public ResponseEntity<String> updateLocationDetail(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+            @PathVariable Long meetingId,
+            @RequestBody LocationDetailUpdateRequest request) {
+        meetingService.updateLocationDetail(userId, meetingId, request.locationDetail());
+        return ResponseEntity.ok("상세 장소가 성공적으로 수정되었습니다.");
     }
 }
