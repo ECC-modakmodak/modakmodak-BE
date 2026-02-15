@@ -18,7 +18,7 @@ import modak.modakmodak.dto.WithdrawRequest;
 import modak.modakmodak.dto.UserLoginRequest;
 import java.util.List;
 import java.util.ArrayList;
-
+import modak.modakmodak.dto.UserLoginResponse;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -53,11 +53,20 @@ public class UserController {
     // 2. 로그인
     @Operation(summary = "로그인", description = "아이디와 비밀번호를 DB 데이터와 대조합니다.")
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody UserLoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody UserLoginRequest request) { // <?>로 변경
         Optional<User> user = userRepository.findByUsername(request.username());
+
         if (user.isPresent() && user.get().getPassword().equals(request.password())) {
-            return ResponseEntity.ok(user.get().getNickname() + "님, 로그인 성공!");
+            User loginUser = user.get();
+
+            return ResponseEntity.ok(new UserLoginResponse(
+                    loginUser.getId(),
+                    loginUser.getNickname(),
+                    "로그인 성공!"
+            ));
         }
+
+        // 실패 시에는 기존처럼 에러 메시지 전송
         return ResponseEntity.status(401).body("아이디 또는 비밀번호가 틀렸습니다.");
     }
 
