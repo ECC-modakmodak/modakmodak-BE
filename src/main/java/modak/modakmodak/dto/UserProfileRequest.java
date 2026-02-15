@@ -17,9 +17,6 @@ public record UserProfileRequest(
         @Schema(description = "상태 메시지", example = "오늘도 화이팅!")
         String targetMessage,
 
-        @Schema(description = "선호하는 모임 유형", example = "도란도란")
-        MeetingAtmosphere preferredType,
-
         @Schema(description = "주 활동 지역", example = "서대문구")
         String activityArea
 ) {}

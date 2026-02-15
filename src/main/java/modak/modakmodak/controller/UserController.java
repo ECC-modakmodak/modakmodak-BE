@@ -196,7 +196,6 @@ public class UserController {
             data.put("profileImage", user.getProfileImage() != null ? user.getProfileImage() : "https://...");
             data.put("attendanceRate", user.getAttendanceRate());
             data.put("targetMessage", user.getTargetMessage() != null ? user.getTargetMessage() : "");
-            data.put("preferredType", user.getPreferredType() != null ? user.getPreferredType() : "");
             data.put("activityArea", user.getActivityArea() != null ? user.getActivityArea() : "");
 
             // ---  해시태그 리스트 만들기 ---

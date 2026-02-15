@@ -65,8 +65,6 @@ public class User {
             this.profileImage = request.profileImage();
         if (request.targetMessage() != null)
             this.targetMessage = request.targetMessage();
-        if (request.preferredType() != null)
-            this.preferredType = request.preferredType();
         if (request.activityArea() != null)
             this.activityArea = request.activityArea();
     }

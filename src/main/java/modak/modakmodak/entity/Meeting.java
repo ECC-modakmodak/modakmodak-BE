@@ -98,4 +98,16 @@ public class Meeting {
     public void completeMeeting() {
         this.isCompleted = true;
     }
+
+    public void setHostAnnouncement(String hostAnnouncement) {
+        this.hostAnnouncement = hostAnnouncement;
+    }
+
+    public void setDate(LocalDateTime date) {
+        this.date = date;
+    }
+
+    public void setLocationDetail(String locationDetail) {
+        this.locationDetail = locationDetail;
+    }
 }

@@ -16,6 +16,10 @@ import modak.modakmodak.dto.MeetingUpdateDetailRequest;
 import modak.modakmodak.dto.ParticipantGoalRequest;
 import java.util.List;
 import java.util.ArrayList;
+import modak.modakmodak.dto.HostAnnouncementUpdateRequest;
+import modak.modakmodak.dto.DateUpdateRequest;
+import modak.modakmodak.dto.LocationDetailUpdateRequest;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -383,17 +387,33 @@ public class MeetingService {
         }
 
         @Transactional
-        public void updateMeetingDetail(Long userId, Long meetingId, MeetingUpdateDetailRequest request) {
+        public void updateHostAnnouncement(Long userId, Long meetingId, String announcement) {
+                Meeting meeting = findAndValidateHost(userId, meetingId); // 공통 검증 로직 호출
+                meeting.setHostAnnouncement(announcement); // 엔티티에 setter 혹은 update 메서드 필요
+        }
+
+        @Transactional
+        public void updateDate(Long userId, Long meetingId, String date) {
+                Meeting meeting = findAndValidateHost(userId, meetingId);
+                if (date != null) meeting.setDate(LocalDateTime.parse(date));
+        }
+
+        @Transactional
+        public void updateLocationDetail(Long userId, Long meetingId, String detail) {
+                Meeting meeting = findAndValidateHost(userId, meetingId);
+                meeting.setLocationDetail(detail);
+        }
+
+        // [꿀팁] 방장 권한 체크 로직이 반복되니 별도 메서드로 빼면 깔끔해요!
+        private Meeting findAndValidateHost(Long userId, Long meetingId) {
                 Meeting meeting = meetingRepository.findById(meetingId)
-                                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모임입니다. ID: " + meetingId));
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모임입니다."));
 
-                // 팟장 권한 검증
-                modak.modakmodak.entity.Participant host = participantRepository
-                                .findByMeetingIdAndIsHostTrue(meetingId);
+                modak.modakmodak.entity.Participant host = participantRepository.findByMeetingIdAndIsHostTrue(meetingId);
+
                 if (host == null || !host.getUser().getId().equals(userId)) {
-                        throw new IllegalArgumentException("수정 권한이 없습니다 (방장이 아닙니다).");
+                        throw new IllegalArgumentException("수정 권한이 없습니다.");
                 }
-
-                meeting.updateDetail((modak.modakmodak.dto.MeetingUpdateDetailRequest) request);
+                return meeting;
         }
 }
