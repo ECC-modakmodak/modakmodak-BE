@@ -11,6 +11,7 @@ public record NotificationListResponse(
                         String message,
                         Boolean isRead,
                         Long relatedId,
+                        Long applicationId, // 참여 신청 ID (MEETING_APPLICATION 타입에서 사용)
                         String senderNickname,
                         String podName,
                         String profileImage,

@@ -79,8 +79,9 @@ public class MeetingService {
                 // 2. 해당 모임의 모든 참여자 정보 가져오기
                 List<Participant> participants = participantRepository.findByMeetingId(meetingId);
 
-                // 3. 참여자 목록 변환 (출석 여부 p.getAttended() 포함)
+                // 3. 참여자 목록 변환 (APPROVED 상태만 표시)
                 List<MeetingDetailResponse.MemberDetail> memberDetails = participants.stream()
+                                .filter(p -> p.getStatus() == ParticipationStatus.APPROVED) // APPROVED만 필터링
                                 .map(p -> {
                                         User user = p.getUser();
 
@@ -138,7 +139,7 @@ public class MeetingService {
 
                                 // ◀ [중요] 아까 만든 참여자 목록과 내 상태 정보를 넣어줍니다.
                                 new MeetingDetailResponse.ParticipantInfo(
-                                                participants.size(),
+                                                memberDetails.size(), // APPROVED 된 인원수만 계산
                                                 meeting.getMaxParticipants(),
                                                 memberDetails),
                                 myStatus != null ? new MeetingDetailResponse.UserStatus(
@@ -155,7 +156,8 @@ public class MeetingService {
                                         .findByMeetingIdAndIsHostTrue(meeting.getId());
                         String hostNickname = (host != null && host.getUser() != null) ? host.getUser().getNickname()
                                         : "알수없음";
-                        int count = participantRepository.countByMeetingId(meeting.getId());
+                        int count = participantRepository.countByMeetingIdAndStatus(meeting.getId(),
+                                        modak.modakmodak.entity.ParticipationStatus.APPROVED);
 
                         // location 필드: area만 사용
                         String location = meeting.getArea() != null ? meeting.getArea() : "";
@@ -218,8 +220,9 @@ public class MeetingService {
                         throw new IllegalArgumentException("이미 해당 모임에 신청한 이력이 있습니다.");
                 }
 
-                // 4. 정원 초과 확인
-                int currentCount = participantRepository.countByMeetingId(meetingId);
+                // 4. 정원 초과 확인 (승인된 멤버만 카운트)
+                int currentCount = participantRepository.countByMeetingIdAndStatus(meetingId,
+                                modak.modakmodak.entity.ParticipationStatus.APPROVED);
                 if (currentCount >= meeting.getMaxParticipants()) {
                         throw new IllegalArgumentException("이미 정원이 찬 모임입니다.");
                 }
@@ -248,6 +251,7 @@ public class MeetingService {
                                         .podName(meeting.getTitle()) // 팟 이름
                                         .profileImage(user.getProfileImage()) // 신청자의 프로필 이미지
                                         .relatedId(meetingId) // 관련 팟 ID
+                                        .applicationId(participant.getId()) // 신청서 ID (Participant ID)
                                         .isRead(false)
                                         .build();
                         notificationRepository.save(notification);
@@ -294,8 +298,9 @@ public class MeetingService {
 
                 // APPROVED 인 경우 정원 체크 (신청 시에도 체크하지만, 동시성 문제 등 대비)
                 if (newStatus == modak.modakmodak.entity.ParticipationStatus.APPROVED) {
-                        int currentCount = participantRepository.countByMeetingId(meetingId);
-                        if (currentCount > participant.getMeeting().getMaxParticipants()) {
+                        int currentCount = participantRepository.countByMeetingIdAndStatus(meetingId,
+                                        modak.modakmodak.entity.ParticipationStatus.APPROVED);
+                        if (currentCount >= participant.getMeeting().getMaxParticipants()) {
                                 // 이미 정원 초과라면 다시 롤백하거나 예외 발생
                                 throw new IllegalArgumentException("정원이 초과되어 승인할 수 없습니다.");
                         }
@@ -305,7 +310,8 @@ public class MeetingService {
                 participantRepository.save(participant);
 
                 // 현재 인원 다시 계산
-                int updatedCount = participantRepository.countByMeetingId(meetingId);
+                int updatedCount = participantRepository.countByMeetingIdAndStatus(meetingId,
+                                modak.modakmodak.entity.ParticipationStatus.APPROVED);
                 String nickname = (participant.getUser() != null) ? participant.getUser().getNickname() : "알수없음";
 
                 return new modak.modakmodak.dto.MeetingApprovalResponse(
@@ -395,7 +401,8 @@ public class MeetingService {
         @Transactional
         public void updateDate(Long userId, Long meetingId, String date) {
                 Meeting meeting = findAndValidateHost(userId, meetingId);
-                if (date != null) meeting.setDate(LocalDateTime.parse(date));
+                if (date != null)
+                        meeting.setDate(LocalDateTime.parse(date));
         }
 
         @Transactional
@@ -407,9 +414,10 @@ public class MeetingService {
         // [꿀팁] 방장 권한 체크 로직이 반복되니 별도 메서드로 빼면 깔끔해요!
         private Meeting findAndValidateHost(Long userId, Long meetingId) {
                 Meeting meeting = meetingRepository.findById(meetingId)
-                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모임입니다."));
+                                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모임입니다."));
 
-                modak.modakmodak.entity.Participant host = participantRepository.findByMeetingIdAndIsHostTrue(meetingId);
+                modak.modakmodak.entity.Participant host = participantRepository
+                                .findByMeetingIdAndIsHostTrue(meetingId);
 
                 if (host == null || !host.getUser().getId().equals(userId)) {
                         throw new IllegalArgumentException("수정 권한이 없습니다.");

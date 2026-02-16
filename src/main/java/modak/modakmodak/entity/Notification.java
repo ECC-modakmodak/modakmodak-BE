@@ -36,6 +36,9 @@ public class Notification {
     @Column(name = "related_id")
     private Long relatedId; // 관련 엔티티 ID (초대ID/요청ID/모임ID 등)
 
+    @Column(name = "application_id")
+    private Long applicationId; // 참여 신청 ID (Participant ID)
+
     @Column(name = "sender_nickname", length = 50)
     private String senderNickname; // 알림을 발생시킨 사용자의 닉네임
 
