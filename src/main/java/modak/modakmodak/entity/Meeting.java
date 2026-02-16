@@ -9,7 +9,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import modak.modakmodak.entity.MeetingAtmosphere;
 import modak.modakmodak.entity.MeetingCategory;
 
-
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -65,34 +64,54 @@ public class Meeting {
         this.locationDetail = request.locationDetail();
         this.description = request.description();
         this.imageUrl = (request.imageUrl() != null && !request.imageUrl().isBlank())
-                ? request.imageUrl() : "pod_1.png";
+                ? request.imageUrl()
+                : "pod_1.png";
         this.hostAnnouncement = request.hostAnnouncement();
         this.status = "OPEN";
-        this.atmosphere = request.atmosphere();
-        this.category = request.category();
-        this.categoryEtc = request.categoryEtc();
-        this.maxParticipants = request.maxParticipants();
+
+        // 2단계에서 값이 넘어오지 않으면(null/0) 기존 1단계 설정값 유지
+        if (request.atmosphere() != null) {
+            this.atmosphere = request.atmosphere();
+        }
+        if (request.category() != null) {
+            this.category = request.category();
+        }
+        if (request.categoryEtc() != null) {
+            this.categoryEtc = request.categoryEtc();
+        }
+        if (request.maxParticipants() > 0) {
+            this.maxParticipants = request.maxParticipants();
+        }
     }
 
     // 팟 상세 정보 부분 수정을 위한 메서드 추가
     public void updateDetail(modak.modakmodak.dto.MeetingUpdateDetailRequest request) {
-        if (request.title() != null) this.title = request.title();
-        if (request.date() != null) this.date = LocalDateTime.parse(request.date());
-        if (request.area() != null) this.area = request.area();
-        if (request.locationDetail() != null) this.locationDetail = request.locationDetail();
-        if (request.description() != null) this.description = request.description();
+        if (request.title() != null)
+            this.title = request.title();
+        if (request.date() != null)
+            this.date = LocalDateTime.parse(request.date());
+        if (request.area() != null)
+            this.area = request.area();
+        if (request.locationDetail() != null)
+            this.locationDetail = request.locationDetail();
+        if (request.description() != null)
+            this.description = request.description();
         if (request.imageUrl() != null && !request.imageUrl().equals("string") && !request.imageUrl().isBlank()) {
             this.imageUrl = request.imageUrl();
         }
-        if (request.hostAnnouncement() != null) this.hostAnnouncement = request.hostAnnouncement();
+        if (request.hostAnnouncement() != null)
+            this.hostAnnouncement = request.hostAnnouncement();
 
         // 초기 세팅 정보 (atmosphere, category 등 에러 해결 부분)
-        if (request.atmosphere() != null) this.atmosphere = request.atmosphere();
-        if (request.category() != null) this.category = request.category();
-        if (request.categoryEtc() != null) this.categoryEtc = request.categoryEtc();
-        if (request.maxParticipants() > 0) this.maxParticipants = request.maxParticipants();
-        }
-
+        if (request.atmosphere() != null)
+            this.atmosphere = request.atmosphere();
+        if (request.category() != null)
+            this.category = request.category();
+        if (request.categoryEtc() != null)
+            this.categoryEtc = request.categoryEtc();
+        if (request.maxParticipants() > 0)
+            this.maxParticipants = request.maxParticipants();
+    }
 
     // 팟 종료 메서드
     public void completeMeeting() {

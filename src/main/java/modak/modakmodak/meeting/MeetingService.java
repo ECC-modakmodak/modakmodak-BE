@@ -148,7 +148,7 @@ public class MeetingService {
         }
 
         @Transactional(readOnly = true)
-        public modak.modakmodak.dto.MeetingListResponse getMeetingList() {
+        public modak.modakmodak.dto.MeetingListResponse getMeetingList(Long userId) {
                 List<Meeting> meetings = meetingRepository.findAll();
 
                 List<modak.modakmodak.dto.MeetingDto> meetingDtos = meetings.stream().map(meeting -> {
@@ -178,14 +178,26 @@ public class MeetingService {
                                                                         : "미정"));
                 }).toList();
 
-                // 오늘의 팟: isCompleted가 false인 미팅 중 첫 번째 (종료되지 않은 팟만)
+                // 오늘의 팟 로직 수정: 로그인한 유저가 참여(APPROVED) 중이고, 날짜가 '오늘'인 팟 조회
                 modak.modakmodak.dto.TodayMeetingDto todayData = null;
-                java.util.Optional<Meeting> activeMeeting = meetings.stream()
-                                .filter(m -> m.getIsCompleted() != null && !m.getIsCompleted())
+                java.time.LocalDate today = java.time.LocalDate.now();
+
+                // 1. 유저가 참여한 APPROVED 상태의 모든 참가 정보 조회 (DB 쿼리 최적화 필요하지만 일단 로직 구현 우선)
+                List<Participant> myParticipations = participantRepository.findAll().stream()
+                                .filter(p -> p.getUser().getId().equals(userId) &&
+                                                p.getStatus() == modak.modakmodak.entity.ParticipationStatus.APPROVED)
+                                .toList();
+
+                // 2. 그 중 날짜가 오늘이고, 완료되지 않은 팟 찾기
+                java.util.Optional<Meeting> myTodayMeeting = myParticipations.stream()
+                                .map(Participant::getMeeting)
+                                .filter(m -> m.getDate() != null &&
+                                                m.getDate().toLocalDate().isEqual(today) &&
+                                                (m.getIsCompleted() == null || !m.getIsCompleted()))
                                 .findFirst();
 
-                if (activeMeeting.isPresent()) {
-                        Meeting meeting = activeMeeting.get();
+                if (myTodayMeeting.isPresent()) {
+                        Meeting meeting = myTodayMeeting.get();
                         todayData = new modak.modakmodak.dto.TodayMeetingDto(
                                         meeting.getId(),
                                         meeting.getArea() != null ? meeting.getArea() : "미정", // spot
