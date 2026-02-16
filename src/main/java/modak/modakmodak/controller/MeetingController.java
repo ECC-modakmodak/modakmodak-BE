@@ -53,8 +53,9 @@ public class MeetingController {
 
     @Operation(summary = "모임 목록 조회", description = "메인 화면에서 모임 목록을 조회합니다.")
     @GetMapping
-    public ResponseEntity<modak.modakmodak.dto.MeetingListResponse> getMeetingList() {
-        return ResponseEntity.ok(meetingService.getMeetingList());
+    public ResponseEntity<modak.modakmodak.dto.MeetingListResponse> getMeetingList(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId) {
+        return ResponseEntity.ok(meetingService.getMeetingList(userId));
     }
 
     @Operation(summary = "모임 참여 신청", description = "특정 모임에 참여를 신청합니다.")
