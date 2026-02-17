@@ -67,7 +67,28 @@ public class MeetingService {
                         throw new IllegalArgumentException("모임 설정 권한이 없습니다.");
                 }
 
+                // [Safety Fix] Capture existing values to ensure they are not lost
+                modak.modakmodak.entity.MeetingAtmosphere oldAtmosphere = meeting.getAtmosphere();
+                modak.modakmodak.entity.MeetingCategory oldCategory = meeting.getCategory();
+                String oldCategoryEtc = meeting.getCategoryEtc();
+                int oldMaxParticipants = meeting.getMaxParticipants();
+
                 meeting.updateDetails(request);
+
+                // [Safety Fix] If updated values are missing/invalid but old values existed,
+                // restore them
+                if (meeting.getAtmosphere() == null && oldAtmosphere != null) {
+                        meeting.setAtmosphere(oldAtmosphere);
+                }
+                if (meeting.getCategory() == null && oldCategory != null) {
+                        meeting.setCategory(oldCategory);
+                }
+                if (meeting.getCategoryEtc() == null && oldCategoryEtc != null) {
+                        meeting.setCategoryEtc(oldCategoryEtc);
+                }
+                if (meeting.getMaxParticipants() <= 0 && oldMaxParticipants > 0) {
+                        meeting.setMaxParticipants(oldMaxParticipants);
+                }
         }
 
         @Transactional(readOnly = true)
@@ -188,21 +209,27 @@ public class MeetingService {
                                                 p.getStatus() == modak.modakmodak.entity.ParticipationStatus.APPROVED)
                                 .toList();
 
-                // 2. 그 중 날짜가 오늘이고, 완료되지 않은 팟 찾기
-                java.util.Optional<Meeting> myTodayMeeting = myParticipations.stream()
-                                .map(Participant::getMeeting)
-                                .filter(m -> m.getDate() != null &&
-                                                m.getDate().toLocalDate().isEqual(today) &&
-                                                (m.getIsCompleted() == null || !m.getIsCompleted()))
+                // 2. 그 중 날짜가 오늘이고, 완료되지 않은 팟 찾기 (Participant 자체를 찾음)
+                java.util.Optional<Participant> myTodayParticipation = myParticipations.stream()
+                                .filter(p -> {
+                                        Meeting m = p.getMeeting();
+                                        return m.getDate() != null &&
+                                                        m.getDate().toLocalDate().isEqual(today) &&
+                                                        (m.getIsCompleted() == null || !m.getIsCompleted());
+                                })
                                 .findFirst();
 
-                if (myTodayMeeting.isPresent()) {
-                        Meeting meeting = myTodayMeeting.get();
+                if (myTodayParticipation.isPresent()) {
+                        Participant p = myTodayParticipation.get();
+                        Meeting meeting = p.getMeeting();
+                        String goal = p.getGoal() != null ? p.getGoal() : "";
+
                         todayData = new modak.modakmodak.dto.TodayMeetingDto(
                                         meeting.getId(),
                                         meeting.getArea() != null ? meeting.getArea() : "미정", // spot
                                         meeting.getTitle(),
                                         meeting.getDate() != null ? meeting.getDate().toString() : "",
+                                        goal,
                                         List.of(
                                                         meeting.getAtmosphere() != null ? meeting.getAtmosphere().name()
                                                                         : "기타",

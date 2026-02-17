@@ -129,4 +129,20 @@ public class Meeting {
     public void setLocationDetail(String locationDetail) {
         this.locationDetail = locationDetail;
     }
+
+    public void setAtmosphere(MeetingAtmosphere atmosphere) {
+        this.atmosphere = atmosphere;
+    }
+
+    public void setCategory(MeetingCategory category) {
+        this.category = category;
+    }
+
+    public void setCategoryEtc(String categoryEtc) {
+        this.categoryEtc = categoryEtc;
+    }
+
+    public void setMaxParticipants(int maxParticipants) {
+        this.maxParticipants = maxParticipants;
+    }
 }
