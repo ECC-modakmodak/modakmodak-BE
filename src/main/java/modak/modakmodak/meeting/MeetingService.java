@@ -79,6 +79,8 @@ public class MeetingService {
                 // 2. 해당 모임의 모든 참여자 정보 가져오기
                 List<Participant> participants = participantRepository.findByMeetingId(meetingId);
 
+                Long realHostId = meeting.getUser().getId();
+
                 // 3. 참여자 목록 변환 (출석 여부 p.getAttended() 포함)
                 List<MeetingDetailResponse.MemberDetail> memberDetails = participants.stream()
                                 .map(p -> {
@@ -97,8 +99,7 @@ public class MeetingService {
                                         return new MeetingDetailResponse.MemberDetail(
                                                         user.getId(),
                                                         user.getNickname(),
-                                                        p.isHost(),
-                                                        user.getProfileImage(),
+                                                        user.getId().equals(realHostId),                                                        user.getProfileImage(),
                                                         user.getTargetMessage() != null ? user.getTargetMessage()
                                                                         : "기본 목표가 없습니다.", // 회원가입 시 적은 목표
                                                         p.getGoal() != null,
