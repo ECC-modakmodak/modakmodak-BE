@@ -7,5 +7,6 @@ public record TodayMeetingDto(
         String spot,
         String title,
         String groupTime,
+        String goal,
         List<String> hashtags) {
 }

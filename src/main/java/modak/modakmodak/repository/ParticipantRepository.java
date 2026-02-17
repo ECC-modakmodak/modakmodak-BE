@@ -16,4 +16,7 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
 
     // 중복 신청 여부 확인
     boolean existsByMeetingIdAndUserId(Long meetingId, Long userId);
+
+    // 승인된 참여자 수
+    int countByMeetingIdAndStatus(Long meetingId, modak.modakmodak.entity.ParticipationStatus status);
 }

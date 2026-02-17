@@ -30,6 +30,7 @@ public class NotificationService {
                         notification.getMessage(),
                         notification.getIsRead(),
                         notification.getRelatedId(),
+                        notification.getApplicationId(), // applicationId = relatedId (Participant ID)
                         notification.getSenderNickname(),
                         notification.getPodName(),
                         notification.getProfileImage(),

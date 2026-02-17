@@ -53,8 +53,9 @@ public class MeetingController {
 
     @Operation(summary = "모임 목록 조회", description = "메인 화면에서 모임 목록을 조회합니다.")
     @GetMapping
-    public ResponseEntity<modak.modakmodak.dto.MeetingListResponse> getMeetingList() {
-        return ResponseEntity.ok(meetingService.getMeetingList());
+    public ResponseEntity<modak.modakmodak.dto.MeetingListResponse> getMeetingList(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId) {
+        return ResponseEntity.ok(meetingService.getMeetingList(userId));
     }
 
     @Operation(summary = "모임 참여 신청", description = "특정 모임에 참여를 신청합니다.")
@@ -124,5 +125,15 @@ public class MeetingController {
             @RequestBody LocationDetailUpdateRequest request) {
         meetingService.updateLocationDetail(userId, meetingId, request.locationDetail());
         return ResponseEntity.ok("상세 장소가 성공적으로 수정되었습니다.");
+    }
+
+    @Operation(summary = "참가자 삭제", description = "팟장이 참가자를 삭제합니다.")
+    @DeleteMapping("/{meetingId}/participants/{participantId}")
+    public ResponseEntity<Void> removeParticipant(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+            @PathVariable Long meetingId,
+            @PathVariable Long participantId) {
+        meetingService.removeParticipant(userId, meetingId, participantId);
+        return ResponseEntity.ok().build();
     }
 }

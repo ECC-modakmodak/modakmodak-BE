@@ -18,7 +18,7 @@ import modak.modakmodak.dto.WithdrawRequest;
 import modak.modakmodak.dto.UserLoginRequest;
 import java.util.List;
 import java.util.ArrayList;
-
+import modak.modakmodak.dto.UserLoginResponse;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -53,11 +53,19 @@ public class UserController {
     // 2. 로그인
     @Operation(summary = "로그인", description = "아이디와 비밀번호를 DB 데이터와 대조합니다.")
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody UserLoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody UserLoginRequest request) { // <?>로 변경
         Optional<User> user = userRepository.findByUsername(request.username());
+
         if (user.isPresent() && user.get().getPassword().equals(request.password())) {
-            return ResponseEntity.ok(user.get().getNickname() + "님, 로그인 성공!");
+            User loginUser = user.get();
+
+            return ResponseEntity.ok(new UserLoginResponse(
+                    loginUser.getUsername(),
+                    loginUser.getNickname(),
+                    "로그인 성공!"));
         }
+
+        // 실패 시에는 기존처럼 에러 메시지 전송
         return ResponseEntity.status(401).body("아이디 또는 비밀번호가 틀렸습니다.");
     }
 
@@ -66,8 +74,12 @@ public class UserController {
     @PostMapping("/login/google")
     public ResponseEntity<?> loginWithGoogle(@RequestBody modak.modakmodak.dto.GoogleLoginRequest request) {
         try {
-            modak.modakmodak.dto.LoginResponse response = userService.loginWithGoogle(request.idToken());
-            return ResponseEntity.status(201).body(response);
+            var result = userService.loginWithGoogle(request.idToken());
+
+            return ResponseEntity.status(201).body(new UserLoginResponse(
+                    result.user().username(), // 구글 유저 username
+                    result.user().nickname(), // 구글 유저 닉네임
+                    "구글 로그인 성공!"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(401).body(Map.of(
                     "status", 401,
@@ -193,12 +205,12 @@ public class UserController {
             data.put("userId", user.getUsername());
             data.put("nickname", user.getNickname());
             data.put("email", user.getEmail());
-            data.put("profileImage", user.getProfileImage() != null ? user.getProfileImage() : "https://...");
+            data.put("profileImage", user.getProfileImage() != null ? user.getProfileImage() : "profile_default.png");
             data.put("attendanceRate", user.getAttendanceRate());
             data.put("targetMessage", user.getTargetMessage() != null ? user.getTargetMessage() : "");
             data.put("activityArea", user.getActivityArea() != null ? user.getActivityArea() : "");
 
-            // ---  해시태그 리스트 만들기 ---
+            // --- 해시태그 리스트 만들기 ---
             List<String> hashtags = new ArrayList<>();
 
             if (user.getPreferredType() != null) {
@@ -230,8 +242,7 @@ public class UserController {
         return ResponseEntity.ok(Map.of(
                 "status", 200,
                 "isAvailable", isAvailable,
-                "message", isAvailable ? "사용 가능한 아이디입니다." : "이미 존재하는 아이디입니다."
-        ));
+                "message", isAvailable ? "사용 가능한 아이디입니다." : "이미 존재하는 아이디입니다."));
     }
 
     // 닉네임 중복 확인 (프론트엔드 실시간 체크용)
@@ -242,8 +253,31 @@ public class UserController {
         return ResponseEntity.ok(Map.of(
                 "status", 200,
                 "isAvailable", isAvailable,
-                "message", isAvailable ? "사용 가능한 닉네임입니다." : "이미 존재하는 닉네임입니다."
-        ));
+                "message", isAvailable ? "사용 가능한 닉네임입니다." : "이미 존재하는 닉네임입니다."));
+    }
+
+    // 유저 ID 조회 (username으로 숫자 ID 가져오기) - 기존 메서드 유지
+
+    @Operation(summary = "내 ID 조회 (Long)", description = "username으로 사용자의 숫자 ID를 반환합니다. (값만 반환)")
+    @GetMapping("/me/id")
+    public ResponseEntity<Long> getMyId(@RequestParam String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        return ResponseEntity.ok(user.getId());
+    }
+
+    // 유저 ID 조회 (username으로 숫자 ID 가져오기)
+    @Operation(summary = "유저 ID 조회", description = "username으로 사용자의 숫자 ID를 조회합니다.")
+    @GetMapping("/id")
+    public ResponseEntity<Map<String, Object>> getUserId(@RequestParam String username) {
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isPresent()) {
+            return ResponseEntity.ok(Map.of("id", user.get().getId()));
+        } else {
+            return ResponseEntity.status(404).body(Map.of(
+                    "status", 404,
+                    "message", "사용자를 찾을 수 없습니다."));
+        }
     }
 
     // 이메일 중복 확인
