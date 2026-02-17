@@ -7,6 +7,7 @@ public record MeetingDto(
                 String title,
                 String createdAt,
                 String representativeImage,
+                Long hostId,
                 String hostNickname,
                 int currentParticipants,
                 int maxParticipants,

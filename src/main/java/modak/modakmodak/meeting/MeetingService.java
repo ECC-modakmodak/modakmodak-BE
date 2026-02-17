@@ -100,7 +100,9 @@ public class MeetingService {
                 // 2. 해당 모임의 모든 참여자 정보 가져오기
                 List<Participant> participants = participantRepository.findByMeetingId(meetingId);
 
-                // 3. 참여자 목록 변환 (APPROVED 상태만 표시)
+                Long realHostId = meeting.getUser().getId();
+
+                // 3. 참여자 목록 변환 (출석 여부 p.getAttended() 포함)
                 List<MeetingDetailResponse.MemberDetail> memberDetails = participants.stream()
                                 .filter(p -> p.getStatus() == ParticipationStatus.APPROVED) // APPROVED만 필터링
                                 .map(p -> {
@@ -119,8 +121,7 @@ public class MeetingService {
                                         return new MeetingDetailResponse.MemberDetail(
                                                         user.getId(),
                                                         user.getNickname(),
-                                                        p.isHost(),
-                                                        user.getProfileImage(),
+                                                        user.getId().equals(realHostId),                                                        user.getProfileImage(),
                                                         user.getTargetMessage() != null ? user.getTargetMessage()
                                                                         : "기본 목표가 없습니다.", // 회원가입 시 적은 목표
                                                         p.getGoal() != null,
@@ -158,6 +159,9 @@ public class MeetingService {
                                 meeting.getHostAnnouncement() != null ? meeting.getHostAnnouncement()
                                                 : "등록된 공지사항이 없습니다.",
 
+                                meeting.getUser().getId(),
+                                meeting.getUser().getNickname(),
+
                                 // ◀ [중요] 아까 만든 참여자 목록과 내 상태 정보를 넣어줍니다.
                                 new MeetingDetailResponse.ParticipantInfo(
                                                 memberDetails.size(), // APPROVED 된 인원수만 계산
@@ -173,12 +177,11 @@ public class MeetingService {
                 List<Meeting> meetings = meetingRepository.findAll();
 
                 List<modak.modakmodak.dto.MeetingDto> meetingDtos = meetings.stream().map(meeting -> {
-                        modak.modakmodak.entity.Participant host = participantRepository
-                                        .findByMeetingIdAndIsHostTrue(meeting.getId());
-                        String hostNickname = (host != null && host.getUser() != null) ? host.getUser().getNickname()
-                                        : "알수없음";
-                        int count = participantRepository.countByMeetingIdAndStatus(meeting.getId(),
-                                        modak.modakmodak.entity.ParticipationStatus.APPROVED);
+                        modak.modakmodak.entity.User hostUser = meeting.getUser();
+                        Long hostId = (hostUser != null) ? hostUser.getId() : null;
+                        String hostNickname = (hostUser != null) ? hostUser.getNickname() : "알수없음";
+
+                        int count = participantRepository.countByMeetingId(meeting.getId());
 
                         // location 필드: area만 사용
                         String location = meeting.getArea() != null ? meeting.getArea() : "";
@@ -188,6 +191,7 @@ public class MeetingService {
                                         meeting.getTitle(),
                                         meeting.getCreatedAt() != null ? meeting.getCreatedAt().toString() : "",
                                         meeting.getImageUrl() != null ? meeting.getImageUrl() : "pod_1.png",
+                                        hostId,
                                         hostNickname,
                                         count,
                                         meeting.getMaxParticipants(),
