@@ -17,4 +17,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByProviderAndProviderId(String provider, String providerId);
 
     boolean existsByEmailAndProvider(String email, String provider);
+
+    // 이메일 중복 확인을 위한 쿼리 메서드
+    boolean existsByEmail(String email);
 }

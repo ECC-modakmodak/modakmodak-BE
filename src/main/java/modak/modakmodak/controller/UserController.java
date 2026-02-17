@@ -279,4 +279,16 @@ public class UserController {
                     "message", "사용자를 찾을 수 없습니다."));
         }
     }
+
+    // 이메일 중복 확인
+    @Operation(summary = "이메일 중복 확인", description = "입력한 이메일이 이미 존재하는지 확인합니다.")
+    @GetMapping("/check-email")
+    public ResponseEntity<Map<String, Object>> checkEmail(@RequestParam String email) {
+        boolean isAvailable = userService.checkEmailAvailable(email);
+        return ResponseEntity.ok(Map.of(
+                "status", 200,
+                "isAvailable", isAvailable,
+                "message", isAvailable ? "사용 가능한 이메일입니다." : "이미 가입된 이메일입니다."
+        ));
+    }
 }
