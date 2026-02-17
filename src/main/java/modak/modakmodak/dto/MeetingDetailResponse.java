@@ -32,6 +32,7 @@ public record MeetingDetailResponse(
         public record MemberDetail(
                         Long memberId,
                         String nickname,
+                        String username,
                         boolean isHost,
                         String profileImage,
                         String targetMessage,

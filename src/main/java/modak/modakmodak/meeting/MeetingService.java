@@ -121,6 +121,7 @@ public class MeetingService {
                                         return new MeetingDetailResponse.MemberDetail(
                                                         user.getId(),
                                                         user.getNickname(),
+                                                        user.getUsername(),
                                                         user.getId().equals(realHostId),                                                        user.getProfileImage(),
                                                         user.getTargetMessage() != null ? user.getTargetMessage()
                                                                         : "기본 목표가 없습니다.", // 회원가입 시 적은 목표
