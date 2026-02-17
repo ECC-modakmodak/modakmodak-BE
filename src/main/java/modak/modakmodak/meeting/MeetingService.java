@@ -137,6 +137,9 @@ public class MeetingService {
                                 meeting.getHostAnnouncement() != null ? meeting.getHostAnnouncement()
                                                 : "등록된 공지사항이 없습니다.",
 
+                                meeting.getUser().getId(),
+                                meeting.getUser().getNickname(),
+
                                 // ◀ [중요] 아까 만든 참여자 목록과 내 상태 정보를 넣어줍니다.
                                 new MeetingDetailResponse.ParticipantInfo(
                                                 participants.size(),
@@ -154,6 +157,8 @@ public class MeetingService {
                 List<modak.modakmodak.dto.MeetingDto> meetingDtos = meetings.stream().map(meeting -> {
                         modak.modakmodak.entity.Participant host = participantRepository
                                         .findByMeetingIdAndIsHostTrue(meeting.getId());
+                        modak.modakmodak.entity.User hostUser = meeting.getUser();
+                        Long hostId = (hostUser != null) ? hostUser.getId() : null;
                         String hostNickname = (host != null && host.getUser() != null) ? host.getUser().getNickname()
                                         : "알수없음";
                         int count = participantRepository.countByMeetingId(meeting.getId());
@@ -166,6 +171,7 @@ public class MeetingService {
                                         meeting.getTitle(),
                                         meeting.getCreatedAt() != null ? meeting.getCreatedAt().toString() : "",
                                         meeting.getImageUrl() != null ? meeting.getImageUrl() : "pod_1.png",
+                                        hostId,
                                         hostNickname,
                                         count,
                                         meeting.getMaxParticipants(),

@@ -17,6 +17,8 @@ public record MeetingDetailResponse(
                         String date, // 모임 약속 날짜
                         List<String> hashtags,
                         String hostAnnouncement,
+                        Long hostId,
+                        String hostNickname,
                         ParticipantInfo participants,
                         UserStatus userStatus) {
         }
