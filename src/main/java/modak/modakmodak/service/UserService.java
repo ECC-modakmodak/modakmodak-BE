@@ -65,6 +65,11 @@ public class UserService {
         return !userRepository.existsByNickname(nickname);
     }
 
+    @Transactional(readOnly = true)
+    public boolean checkEmailAvailable(String email) {
+        return !userRepository.existsByEmail(email);
+    }
+
     /**
      * Google OAuth 로그인 처리
      * 
