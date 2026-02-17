@@ -155,12 +155,10 @@ public class MeetingService {
                 List<Meeting> meetings = meetingRepository.findAll();
 
                 List<modak.modakmodak.dto.MeetingDto> meetingDtos = meetings.stream().map(meeting -> {
-                        modak.modakmodak.entity.Participant host = participantRepository
-                                        .findByMeetingIdAndIsHostTrue(meeting.getId());
                         modak.modakmodak.entity.User hostUser = meeting.getUser();
                         Long hostId = (hostUser != null) ? hostUser.getId() : null;
-                        String hostNickname = (host != null && host.getUser() != null) ? host.getUser().getNickname()
-                                        : "알수없음";
+                        String hostNickname = (hostUser != null) ? hostUser.getNickname() : "알수없음";
+
                         int count = participantRepository.countByMeetingId(meeting.getId());
 
                         // location 필드: area만 사용
