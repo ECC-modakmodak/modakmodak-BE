@@ -40,7 +40,8 @@ public record MeetingDetailResponse(
                         String displayedGoal,
                         String statusBadge,
                         boolean attended,
-                        List<String> hashtags){
+                        float attendanceRate, // [New] 출석률 추가
+                        List<String> hashtags) {
         }
 
         public record UserStatus(
