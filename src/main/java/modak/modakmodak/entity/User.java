@@ -43,7 +43,8 @@ public class User {
     private MeetingMethod preferredMethod;
 
     @Builder.Default
-    private float attendanceRate = 0.0f;
+    @Column(name = "attendance_rate", nullable = false)
+    private Float attendanceRate = 0.0f;
 
     private String statusMessage;
     private String targetMessage;
