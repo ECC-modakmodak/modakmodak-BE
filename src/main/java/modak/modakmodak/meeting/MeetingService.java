@@ -122,7 +122,7 @@ public class MeetingService {
                                                         user.getId(),
                                                         user.getNickname(),
                                                         user.getUsername(),
-                                                        user.getId().equals(realHostId),                                                        user.getProfileImage(),
+                                                        user.getId().equals(realHostId), user.getProfileImage(),
                                                         user.getTargetMessage() != null ? user.getTargetMessage()
                                                                         : "기본 목표가 없습니다.", // 회원가입 시 적은 목표
                                                         p.getGoal() != null,
@@ -130,6 +130,7 @@ public class MeetingService {
                                                         p.getReactionEmoji() != null ? p.getReactionEmoji().name()
                                                                         : null,
                                                         p.getAttended() != null ? p.getAttended() : false,
+                                                        user.getAttendanceRate(), // [New] 출석률 추가
                                                         hashtags);
                                 }).collect(Collectors.toList());
 
@@ -422,6 +423,11 @@ public class MeetingService {
                 // 4. 출석 상태 업데이트
                 participant.updateAttendance(request.attended());
 
+                // [Fix] 출석률 실시간 업데이트
+                if (participant.getUser() != null) {
+                        updateUserAttendanceRate(participant.getUser());
+                }
+
                 // 5. 응답 반환
                 String nickname = (participant.getUser() != null) ? participant.getUser().getNickname() : "알수없음";
                 Long participantUserId = (participant.getUser() != null) ? participant.getUser().getId() : null;
@@ -434,6 +440,30 @@ public class MeetingService {
                                                 participantUserId,
                                                 nickname,
                                                 participant.getAttended()));
+        }
+
+        private void updateUserAttendanceRate(modak.modakmodak.entity.User user) {
+                if (user == null)
+                        return;
+
+                // 1. 해당 유저가 참여(APPROVED)한 모든 모임 수
+                int totalApproved = participantRepository.countByUserIdAndStatus(user.getId(),
+                                modak.modakmodak.entity.ParticipationStatus.APPROVED);
+
+                // 2. 그 중 출석(Attended=true)한 모임 수
+                int totalAttended = participantRepository.countByUserIdAndStatusAndAttendedTrue(user.getId(),
+                                modak.modakmodak.entity.ParticipationStatus.APPROVED);
+
+                // 3. 출석률 계산 (소수점 한자리까지 반올림 예: 33.3)
+                float rate = 0.0f;
+                if (totalApproved > 0) {
+                        rate = (float) totalAttended / totalApproved * 100;
+                        rate = Math.round(rate * 10) / 10.0f;
+                }
+
+                // 4. 유저 정보 업데이트
+                user.setAttendanceRate(rate);
+                userRepository.save(user); // 명시적 저장
         }
 
         @Transactional

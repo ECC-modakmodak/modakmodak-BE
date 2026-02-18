@@ -19,4 +19,10 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
 
     // 승인된 참여자 수
     int countByMeetingIdAndStatus(Long meetingId, modak.modakmodak.entity.ParticipationStatus status);
+
+    // [New] 특정 유저의 승인된 참여 총 횟수
+    int countByUserIdAndStatus(Long userId, modak.modakmodak.entity.ParticipationStatus status);
+
+    // [New] 특정 유저의 승인된 참여 중 출석한 횟수
+    int countByUserIdAndStatusAndAttendedTrue(Long userId, modak.modakmodak.entity.ParticipationStatus status);
 }
