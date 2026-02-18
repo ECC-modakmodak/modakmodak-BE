@@ -30,6 +30,7 @@ public record MeetingDetailResponse(
         }
 
         public record MemberDetail(
+                        Long participantId,
                         Long memberId,
                         String nickname,
                         String username,

@@ -119,7 +119,8 @@ public class MeetingService {
                                                 hashtags.add(user.getPreferredMethod().name());
 
                                         return new MeetingDetailResponse.MemberDetail(
-                                                        user.getId(),
+                                                        p.getId(), // participantId
+                                                        user.getId(), // memberId
                                                         user.getNickname(),
                                                         user.getUsername(),
                                                         user.getId().equals(realHostId), user.getProfileImage(),
