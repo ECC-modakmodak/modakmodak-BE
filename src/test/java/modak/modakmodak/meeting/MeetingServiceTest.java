@@ -126,8 +126,9 @@ class MeetingServiceTest {
 
                 given(meetingRepository.findAll()).willReturn(java.util.List.of(meeting));
                 given(participantRepository.findAll()).willReturn(java.util.List.of(hostParticipant));
-                given(participantRepository.findByMeetingIdAndIsHostTrue(any())).willReturn(hostParticipant);
-                given(participantRepository.countByMeetingIdAndStatus(any(), any())).willReturn(1);
+                // given(participantRepository.findByMeetingIdAndIsHostTrue(any())).willReturn(hostParticipant);
+                // given(participantRepository.countByMeetingIdAndStatus(any(),
+                // any())).willReturn(1);
 
                 // when
                 modak.modakmodak.dto.MeetingListResponse response = meetingService.getMeetingList(userId);
