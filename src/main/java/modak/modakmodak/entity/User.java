@@ -37,9 +37,11 @@ public class User {
     private String activityArea;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "preferred_type", columnDefinition = "VARCHAR(255)") // 길이를 255로 강제 지정
     private MeetingAtmosphere preferredType;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "preferred_method", columnDefinition = "VARCHAR(255)") // 길이를 255로 강제 지정
     private MeetingMethod preferredMethod;
 
     @Builder.Default
