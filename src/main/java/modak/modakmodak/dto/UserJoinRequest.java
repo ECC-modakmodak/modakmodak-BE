@@ -16,7 +16,7 @@ public record UserJoinRequest(
 
                 @Schema(description = "선호 분위기", example = "CHATTY") MeetingAtmosphere preferredType, // 조용히, 도란도란
 
-                @Schema(description = "선호 방식", example = "대면") MeetingMethod preferredMethod, // 대면, 비대면
+                @Schema(description = "선호 방식", example = "ONLINE") MeetingMethod preferredMethod, // 대면, 비대면
 
                 @Schema(description = "주요 활동 지역", example = "서울시 서대문구") String activityArea, //
 
