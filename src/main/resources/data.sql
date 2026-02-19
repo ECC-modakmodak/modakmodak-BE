@@ -1,11 +1,11 @@
 -- 1. 유저 생성
 INSERT INTO users (id, username, password, email, nickname, profile_image, preferred_type, preferred_method, activity_area, target_message, attendance_rate)
-VALUES (1, 'try2', 'pw123456', 'try2@ewha.ac.kr', '지인',
+VALUES (1, 'try2', 'pw123456!', 'try2@ewha.ac.kr', '지인',
         'profile_default.png',
         'CHATTY', '대면', '서울시 서대문구', '웹 개발 정복하기!', 0);
 
 INSERT INTO users (id, username, password, email, nickname, profile_image, preferred_type, preferred_method, activity_area, target_message, attendance_rate)
-VALUES (2, 'potato', 'pw123456', 'potato@ewha.ac.kr', '감자',
+VALUES (2, 'potato', 'pw123456!', 'potato@ewha.ac.kr', '감자',
         'profile_default.png',
         'CHATTY', '대면', '서울시 서대문구', '웹 개발 정복하기!', 0);
 
