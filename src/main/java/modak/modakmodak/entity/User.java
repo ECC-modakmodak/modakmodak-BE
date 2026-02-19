@@ -37,10 +37,12 @@ public class User {
     private String activityArea;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "preferred_type_v2", columnDefinition = "VARCHAR(255)")    private MeetingAtmosphere preferredType;
+    @Column(name = "preferred_type")
+    private MeetingAtmosphere preferredType;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "preferred_method_v2", columnDefinition = "VARCHAR(255)")    private MeetingMethod preferredMethod;
+    @Column(name = "preferred_method")
+    private MeetingMethod preferredMethod;
 
     @Builder.Default
     @Column(name = "attendance_rate", nullable = false)
