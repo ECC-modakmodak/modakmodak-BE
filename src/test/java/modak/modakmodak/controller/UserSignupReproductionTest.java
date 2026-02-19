@@ -165,4 +165,49 @@ public class UserSignupReproductionTest {
                                 .andExpect(status().isBadRequest())
                                 .andExpect(content().string(org.hamcrest.Matchers.containsString("이미 사용 중인 아이디입니다.")));
         }
+
+        @Test
+        void signup_InvalidEnum_ShouldFail_With400() throws Exception {
+                // Raw JSON with invalid enum value to bypass strong typing in helper methods
+                String requestJson = "{" +
+                                "\"username\":\"enumUser\"," +
+                                "\"password\":\"pw123456!\"," +
+                                "\"email\":\"enum@test.com\"," +
+                                "\"nickname\":\"enumNick\"," +
+                                "\"preferredType\":\"INVALID_TYPE\"," + // Invalid Enum
+                                "\"preferredMethod\":\"대면\"," +
+                                "\"activityArea\":\"Area\"," +
+                                "\"targetMessage\":\"Goal\"" +
+                                "}";
+
+                mockMvc.perform(post("/api/users/signup")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestJson))
+                                .andDo(print())
+                                .andExpect(status().isBadRequest()); // Expect 400 for JSON parse error
+        }
+
+        @Test
+        void signup_DataTooLong_ShouldFail() throws Exception {
+                String longString = "a".repeat(300); // 300 chars, exceeding 255 limit often used
+                UserJoinRequest request = new UserJoinRequest(
+                                longString, // Too long username
+                                "pw123456!",
+                                "long@test.com",
+                                "longNick",
+                                MeetingAtmosphere.CHATTY,
+                                MeetingMethod.대면,
+                                "Area",
+                                "Goal");
+
+                // This might return 500 if not handled, or 400 if @Size validation exists.
+                // If it returns 500, we need to handle DataIntegrityViolationException.
+                mockMvc.perform(post("/api/users/signup")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andDo(print())
+                                .andExpect(status().isBadRequest())
+                                .andExpect(content().string(org.hamcrest.Matchers
+                                                .containsString("입력값이 너무 길거나 데이터 형식이 올바르지 않습니다.")));
+        }
 }

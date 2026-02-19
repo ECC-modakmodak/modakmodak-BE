@@ -18,4 +18,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
         return ResponseEntity.badRequest().body(e.getMessage());
     }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<String> handleDataIntegrityViolationException(
+            org.springframework.dao.DataIntegrityViolationException e) {
+        return ResponseEntity.badRequest().body("입력값이 너무 길거나 데이터 형식이 올바르지 않습니다.");
+    }
 }
