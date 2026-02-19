@@ -44,7 +44,7 @@ public class UserService {
                 .password(request.password()) // ⚠️ 추후 암호화 로직 추가 권장
                 .email(request.email())
                 .nickname(request.nickname())
-                .attendanceRate(0) // 초기 참여율 설정
+                .attendanceRate(0.0f) // 초기 참여율 설정
                 .preferredType(request.preferredType()) // 선호 분위기 (Enum)
                 .preferredMethod(request.preferredMethod()) // 대면/비대면 (Enum)
                 .activityArea(request.activityArea()) // 활동 지역
@@ -98,7 +98,7 @@ public class UserService {
                                 .profileImage("profile_default.png")
                                 .provider("GOOGLE")
                                 .providerId(providerId)
-                                .attendanceRate(0)
+                                .attendanceRate(0.0f)
                                 .build();
 
                         return userRepository.save(newUser);
