@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = "modak.modakmodak.controller")
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
