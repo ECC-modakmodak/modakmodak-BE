@@ -22,6 +22,8 @@ import modak.modakmodak.dto.UserLoginResponse;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import modak.modakmodak.service.EmailService;
+import modak.modakmodak.dto.EmailSendRequest;
 
 @Tag(name = "User", description = "회원 관련 API (DB 연동)")
 @RestController
@@ -32,6 +34,7 @@ public class UserController {
 
     private final UserService userService;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     // 1. 회원가입
     @Operation(summary = "회원가입", description = "새로운 유저 정보를 DB에 저장합니다.")
@@ -88,29 +91,54 @@ public class UserController {
         }
     }
 
+    // 인증번호 이메일 발송
+    @Operation(summary = "이메일 인증번호 발송", description = "아이디/비밀번호 찾기를 위해 이메일로 인증번호를 보냅니다.")
+    @PostMapping("/send-verification-code")
+    public ResponseEntity<String> sendVerificationCode(@RequestBody EmailSendRequest request) {
+        try {
+            emailService.sendVerificationCode(request.email());
+            return ResponseEntity.ok("인증번호가 이메일로 발송되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("이메일 발송에 실패했습니다: " + e.getMessage());
+        }
+    }
+
     // 3. 아이디 찾기 (이메일로 조회)
-    @Operation(summary = "아이디 찾기", description = "이메일로 가입된 유저의 아이디를 찾습니다.")
+    @Operation(summary = "아이디 찾기", description = "이메일과 인증번호를 확인하여 가입된 유저의 아이디를 찾습니다.")
     @PostMapping("/find-id")
     public ResponseEntity<String> findId(@RequestBody FindIdRequest request) {
+        // 1. 인증번호 검증
+        if (!emailService.verifyCode(request.email(), request.code())) {
+            return ResponseEntity.status(401).body("인증번호가 일치하지 않거나 만료되었습니다.");
+        }
+
+        // 2. 아이디 찾기 진행
         Optional<User> user = userRepository.findByEmail(request.email());
         return user.map(u -> ResponseEntity.ok("찾으시는 아이디는: " + u.getUsername()))
                 .orElse(ResponseEntity.status(404).body("해당 이메일로 가입된 정보가 없습니다."));
     }
 
     // 4. 임시 비밀번호 발급
-    @Operation(summary = "비밀번호 찾기", description = "임시 비밀번호를 생성하여 DB를 업데이트합니다.")
+    @Operation(summary = "비밀번호 찾기", description = "인증번호 검증 후 임시 비밀번호를 생성하여 DB를 업데이트합니다.")
     @PostMapping("/find-pw")
     public ResponseEntity<String> findPassword(@RequestBody FindPwRequest request) {
 
+        // 1. 인증번호 검증
+        if (!emailService.verifyCode(request.email(), request.code())) {
+            return ResponseEntity.status(401).body("인증번호가 일치하지 않거나 만료되었습니다.");
+        }
+
         Optional<User> user = userRepository.findByUsername(request.username());
 
+        // 2. 유저 정보 일치 확인 및 임시 비밀번호 발급
         if (user.isPresent() && user.get().getEmail().equals(request.email())) {
-            // 실제로는 무작위 문자열을 생성해야 하지만, 테스트용으로 고정합니다.
+            // 실제로는 무작위 문자열을 생성해야 하지만, 테스트용으로 고정합니다. (추후 무작위 로직으로 변경 추천)
             String tempPassword = "temp1234!";
             user.get().setPassword(tempPassword); // 비밀번호 변경
             userRepository.save(user.get()); // DB 업데이트
 
-            return ResponseEntity.ok("임시 비밀번호가 발송되었습니다: " + tempPassword);
+            // 참고: 여기서 임시 비밀번호를 화면에 보여줄 수도 있고, 이메일로 다시 보내줄 수도 있습니다.
+            return ResponseEntity.ok("임시 비밀번호가 발급되었습니다: " + tempPassword);
         } else {
             return ResponseEntity.status(404).body("사용자 정보가 일치하지 않습니다.");
         }
