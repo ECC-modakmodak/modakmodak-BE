@@ -148,29 +148,64 @@ public class UserController {
         ));
     }
 
-    // 4. 임시 비밀번호 발급
-    @Operation(summary = "비밀번호 찾기", description = "인증번호 검증 후 임시 비밀번호를 생성하여 DB를 업데이트합니다.")
-    @PostMapping("/find-pw")
-    public ResponseEntity<String> findPassword(@RequestBody FindPwRequest request) {
+    // 4-1. 비밀번호 찾기용 인증번호 발송
+    @Operation(summary = "비밀번호 찾기 인증번호 발송", description = "아이디와 이메일이 일치하는 회원에게 인증번호를 발송합니다.")
+    @PostMapping("/find-pw/send-code")
+    public ResponseEntity<String> sendCodeForFindPw(@RequestBody modak.modakmodak.dto.FindPwRequest request) {
 
-        // 1. 인증번호 검증
+        Optional<User> user = userRepository.findByUsernameAndEmail(request.username(), request.email());
+
+        if (user.isEmpty()) {
+            return ResponseEntity.status(404).body("입력하신 정보와 일치하는 회원이 없습니다.");
+        }
+
+        try {
+            emailService.sendVerificationCode(user.get().getEmail());
+            return ResponseEntity.ok("인증번호가 이메일로 발송되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("이메일 발송에 실패했습니다: " + e.getMessage());
+        }
+    }
+
+    // 4-2. 비밀번호 찾기용 인증번호 검증
+    @Operation(summary = "비밀번호 찾기 검증", description = "이메일로 받은 인증번호가 맞는지 확인합니다.")
+    @PostMapping("/find-pw/verify")
+    public ResponseEntity<String> verifyForFindPw(@RequestBody modak.modakmodak.dto.FindPwVerifyRequest request) {
+
+        // 유저 정보 재확인
+        Optional<User> user = userRepository.findByUsernameAndEmail(request.username(), request.email());
+        if (user.isEmpty()) {
+            return ResponseEntity.status(404).body("정보와 일치하는 아이디가 없습니다.");
+        }
+
+        // 인증번호 검증
         if (!emailService.verifyCode(request.email(), request.code())) {
             return ResponseEntity.status(401).body("인증번호가 일치하지 않거나 만료되었습니다.");
         }
 
+        return ResponseEntity.ok("인증에 성공했습니다. 새 비밀번호를 설정해주세요.");
+    }
+
+    // 4-3. 새 비밀번호 재설정
+    @Operation(summary = "새 비밀번호 설정", description = "인증 완료 후 새로운 비밀번호로 변경합니다.")
+    @PostMapping("/find-pw/reset")
+    public ResponseEntity<String> resetPwAfterFind(@RequestBody modak.modakmodak.dto.FindPwResetRequest request) {
+
         Optional<User> user = userRepository.findByUsername(request.username());
 
-        // 2. 유저 정보 일치 확인 및 임시 비밀번호 발급
-        if (user.isPresent() && user.get().getEmail().equals(request.email())) {
-            // 실제로는 무작위 문자열을 생성해야 하지만, 테스트용으로 고정합니다. (추후 무작위 로직으로 변경 추천)
-            String tempPassword = "temp1234!";
-            user.get().setPassword(tempPassword); // 비밀번호 변경
-            userRepository.save(user.get()); // DB 업데이트
+        if (user.isPresent()) {
+            User foundUser = user.get();
 
-            // 참고: 여기서 임시 비밀번호를 화면에 보여줄 수도 있고, 이메일로 다시 보내줄 수도 있습니다.
-            return ResponseEntity.ok("임시 비밀번호가 발급되었습니다: " + tempPassword);
+            // 새 비밀번호 유효성 검증 (기존에 있던 Validator 활용)
+            modak.modakmodak.util.PasswordValidator.validate(request.newPassword());
+
+            // 비밀번호 변경 및 저장
+            foundUser.setPassword(request.newPassword()); // 추후 실제 서비스 시에는 암호화(Bcrypt 등) 적용 필요
+            userRepository.save(foundUser);
+
+            return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다. 새로운 비밀번호로 로그인해주세요.");
         } else {
-            return ResponseEntity.status(404).body("사용자 정보가 일치하지 않습니다.");
+            return ResponseEntity.status(404).body("사용자를 찾을 수 없습니다.");
         }
     }
 
