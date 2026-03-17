@@ -71,4 +71,12 @@ public class User {
         if (request.activityArea() != null)
             this.activityArea = request.activityArea();
     }
+
+    @Column(name = "created_at", updatable = false)
+    private java.time.LocalDate createdAt;
+
+    @PrePersist // DB에 INSERT 되기 직전에 실행됨
+    protected void onCreate() {
+        createdAt = java.time.LocalDate.now();
+    }
 }

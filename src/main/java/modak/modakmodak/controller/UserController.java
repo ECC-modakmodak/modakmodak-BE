@@ -103,19 +103,49 @@ public class UserController {
         }
     }
 
-    // 3. 아이디 찾기 (이메일로 조회)
-    @Operation(summary = "아이디 찾기", description = "이메일과 인증번호를 확인하여 가입된 유저의 아이디를 찾습니다.")
-    @PostMapping("/find-id")
-    public ResponseEntity<String> findId(@RequestBody FindIdRequest request) {
-        // 1. 인증번호 검증
+    // 1. 아이디 찾기용 인증번호 발송 (닉네임 + 이메일 DB 대조)
+    @Operation(summary = "아이디 찾기 인증번호 발송", description = "닉네임과 이메일이 일치하는 회원에게만 인증번호를 발송합니다.")
+    @PostMapping("/find-id/send-code")
+    public ResponseEntity<String> sendCodeForFindId(@RequestBody modak.modakmodak.dto.FindIdRequest request) { // ◀ 여기 이름 수정됨!
+        // DB에서 닉네임과 이메일로 가입된 유저가 있는지 확인
+        Optional<User> user = userRepository.findByNicknameAndEmail(request.nickname(), request.email());
+
+        if (user.isEmpty()) {
+            return ResponseEntity.status(404).body("입력하신 정보와 일치하는 회원이 없습니다."); // 시안의 '아이디 없을 경우' 처리용
+        }
+
+        try {
+            // 회원이 존재하면 해당 이메일로 발송
+            emailService.sendVerificationCode(user.get().getEmail());
+            return ResponseEntity.ok("인증번호가 이메일로 발송되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("이메일 발송에 실패했습니다: " + e.getMessage());
+        }
+    }
+
+    // 2. 인증번호 확인 및 아이디/가입일 반환
+    @Operation(summary = "아이디 찾기 검증 및 결과 반환", description = "인증번호를 검증한 뒤 아이디와 가입일을 반환합니다.")
+    @PostMapping("/find-id/verify")
+    public ResponseEntity<?> verifyAndFindId(@RequestBody modak.modakmodak.dto.FindIdVerifyRequest request) { // ◀ 여기는 그대로 유지!
+
+        // 1. 보안을 위해 다시 한번 유저 정보 확인
+        Optional<User> user = userRepository.findByNicknameAndEmail(request.nickname(), request.email());
+        if (user.isEmpty()) {
+            return ResponseEntity.status(404).body("정보와 일치하는 아이디가 없습니다.");
+        }
+
+        // 2. 인증번호 검증
         if (!emailService.verifyCode(request.email(), request.code())) {
             return ResponseEntity.status(401).body("인증번호가 일치하지 않거나 만료되었습니다.");
         }
 
-        // 2. 아이디 찾기 진행
-        Optional<User> user = userRepository.findByEmail(request.email());
-        return user.map(u -> ResponseEntity.ok("찾으시는 아이디는: " + u.getUsername()))
-                .orElse(ResponseEntity.status(404).body("해당 이메일로 가입된 정보가 없습니다."));
+        // 3. 시안에 맞게 아이디(username)와 가입일(createdAt)을 반환
+        User foundUser = user.get();
+        return ResponseEntity.ok(Map.of(
+                "status", 200,
+                "username", foundUser.getUsername(),
+                "createdAt", foundUser.getCreatedAt() != null ? foundUser.getCreatedAt().toString() : "가입일 정보 없음"
+        ));
     }
 
     // 4. 임시 비밀번호 발급

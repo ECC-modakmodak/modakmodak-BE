@@ -20,4 +20,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 이메일 중복 확인을 위한 쿼리 메서드
     boolean existsByEmail(String email);
+
+    Optional<User> findByNicknameAndEmail(String nickname, String email);
 }

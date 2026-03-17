@@ -15,6 +15,21 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
 
+mail:
+  host: smtp.gmail.com
+  port: 587
+  username: ${MAIL_USERNAME}  # 👈 Render 환경변수에서 가져옴
+  password: ${MAIL_PASSWORD}  # 👈 Render 환경변수에서 가져옴 (띄어쓰기 없이 16자리!)
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+          required: true
+          ssl:
+            trust: smtp.gmail.com
+
 springdoc:
   swagger-ui:
     path: /swagger
