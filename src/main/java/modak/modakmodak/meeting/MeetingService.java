@@ -20,6 +20,7 @@ import modak.modakmodak.dto.HostAnnouncementUpdateRequest;
 import modak.modakmodak.dto.DateUpdateRequest;
 import modak.modakmodak.dto.LocationDetailUpdateRequest;
 import java.time.LocalDateTime;
+import modak.modakmodak.entity.MeetingPodCategory;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +38,8 @@ public class MeetingService {
                 Meeting meeting = Meeting.builder()
                                 .user(user)
                                 .atmosphere(request.atmosphere()) // Enum으로 바로 저장
-                                .category(request.category()) // Enum으로 바로 저장
+                                .category(request.category()) // Enum으로 바로 저장\
+                                .podCategory(request.podCategory())
                                 .categoryEtc(request.categoryEtc()) // "기타" 내용 저장
                                 .maxParticipants(request.maxParticipants())
                                 .status("PENDING")
@@ -117,6 +119,8 @@ public class MeetingService {
                                                 hashtags.add(user.getPreferredType().name());
                                         if (user.getPreferredMethod() != null)
                                                 hashtags.add(user.getPreferredMethod().name());
+                                        if (meeting.getPodCategory() != null)
+                                                hashtags.add(meeting.getPodCategory().getValue());
 
                                         return new MeetingDetailResponse.MemberDetail(
                                                         p.getId(), // participantId
