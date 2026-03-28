@@ -2,7 +2,7 @@ package modak.modakmodak.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import modak.modakmodak.dto.MeetingDetailRequest;
-import modak.modakmodak.meeting.MeetingService;
+import modak.modakmodak.service.MeetingService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -3,7 +3,6 @@ package modak.modakmodak.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import modak.modakmodak.dto.ParticipantGoalRequest;
-import modak.modakmodak.meeting.MeetingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import modak.modakmodak.service.ParticipantService;

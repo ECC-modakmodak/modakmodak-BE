@@ -1,10 +1,11 @@
-package modak.modakmodak.meeting;
+package modak.modakmodak.service;
 
 import lombok.RequiredArgsConstructor;
 import modak.modakmodak.dto.MeetingDetailRequest;
 import modak.modakmodak.dto.MeetingSetupRequest;
 import modak.modakmodak.dto.MeetingDetailResponse;
 import modak.modakmodak.entity.Meeting;
+import modak.modakmodak.repository.MateRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -12,21 +13,14 @@ import modak.modakmodak.entity.User;
 import modak.modakmodak.entity.Participant;
 import modak.modakmodak.entity.ParticipationStatus;
 import java.util.stream.Collectors;
-import modak.modakmodak.dto.MeetingUpdateDetailRequest;
-import modak.modakmodak.dto.ParticipantGoalRequest;
-import java.util.List;
 import java.util.ArrayList;
-import modak.modakmodak.dto.HostAnnouncementUpdateRequest;
-import modak.modakmodak.dto.DateUpdateRequest;
-import modak.modakmodak.dto.LocationDetailUpdateRequest;
 import java.time.LocalDateTime;
-import modak.modakmodak.entity.MeetingPodCategory;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class MeetingService {
-        private final MeetingRepository meetingRepository;
+        private final MateRepository.MeetingRepository meetingRepository;
         private final modak.modakmodak.repository.ParticipantRepository participantRepository;
         private final modak.modakmodak.repository.UserRepository userRepository;
         private final modak.modakmodak.repository.NotificationRepository notificationRepository;
@@ -54,6 +48,25 @@ public class MeetingService {
                                 .isHost(true)
                                 .build();
                 participantRepository.save(host);
+
+                if (request.invitedMateIds() != null && !request.invitedMateIds().isEmpty()) {
+                        for (Long mateId : request.invitedMateIds()) {
+                                // 자기 자신을 초대하는 것은 건너뜀
+                                if (mateId.equals(userId)) continue;
+
+                                modak.modakmodak.entity.User mateUser = userRepository.findById(mateId)
+                                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메이트입니다. ID: " + mateId));
+
+                                modak.modakmodak.entity.Participant invitedParticipant = modak.modakmodak.entity.Participant.builder()
+                                        .meeting(savedMeeting)
+                                        .user(mateUser)
+                                        .status(modak.modakmodak.entity.ParticipationStatus.PENDING) // 초대받은 상태 (승인 대기)
+                                        .isHost(false) // 방장이 아님
+                                        .build();
+
+                                participantRepository.save(invitedParticipant);
+                        }
+                }
 
                 return savedMeeting.getId();
         }

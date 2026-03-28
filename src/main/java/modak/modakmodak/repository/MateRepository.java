@@ -1,6 +1,7 @@
 package modak.modakmodak.repository;
 
 import modak.modakmodak.entity.Mate;
+import modak.modakmodak.entity.Meeting;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,4 +22,7 @@ public interface MateRepository extends JpaRepository<Mate, Long> {
     @Query("SELECT m FROM Mate m WHERE (m.user1.id = :userId1 AND m.user2.id = :userId2) " +
             "OR (m.user1.id = :userId2 AND m.user2.id = :userId1)")
     java.util.Optional<Mate> findMateRelationship(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
+
+    interface MeetingRepository extends JpaRepository<Meeting, Long> {
+    }
 }
