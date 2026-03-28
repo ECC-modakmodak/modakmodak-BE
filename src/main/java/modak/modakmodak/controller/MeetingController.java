@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import modak.modakmodak.dto.HostAnnouncementUpdateRequest;
 import modak.modakmodak.dto.DateUpdateRequest;
 import modak.modakmodak.dto.LocationDetailUpdateRequest;
+import modak.modakmodak.service.ParticipantService;
 
 @Tag(name = "Meeting", description = "모임 개설 API")
 @RestController
@@ -19,6 +20,7 @@ import modak.modakmodak.dto.LocationDetailUpdateRequest;
 @RequiredArgsConstructor
 public class MeetingController {
     private final MeetingService meetingService;
+    private final ParticipantService participantService;
 
     @Operation(summary = "모임 초기 성격 설정", description = "1단계: 분위기, 카테고리, 인원을 설정합니다.")
     @PostMapping("/setup")
@@ -126,13 +128,14 @@ public class MeetingController {
         return ResponseEntity.ok("상세 장소가 성공적으로 수정되었습니다.");
     }
 
-    @Operation(summary = "참가자 삭제", description = "팟장이 참가자를 삭제합니다.")
+    @Operation(summary = "참가자 삭제", description = "방장이 특정 참가자를 모임에서 강퇴(삭제)합니다.")
     @DeleteMapping("/{meetingId}/participants/{participantId}")
-    public ResponseEntity<Void> removeParticipant(
-            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+    public ResponseEntity<String> removeParticipant(
             @PathVariable Long meetingId,
-            @PathVariable Long participantId) {
-        meetingService.removeParticipant(userId, meetingId, participantId);
-        return ResponseEntity.ok().build();
+            @PathVariable Long participantId,
+            @RequestHeader("X-User-Id") Long userId) {
+
+        participantService.removeParticipant(userId, meetingId, participantId);
+        return ResponseEntity.ok("참가자가 성공적으로 삭제되었습니다.");
     }
 }

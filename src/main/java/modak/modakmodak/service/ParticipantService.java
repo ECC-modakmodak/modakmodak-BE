@@ -13,6 +13,9 @@ import java.time.LocalDateTime;
 import modak.modakmodak.repository.MeetingRepository;
 import modak.modakmodak.repository.UserRepository;
 import java.util.Optional;
+import modak.modakmodak.repository.MeetingRepository;
+import modak.modakmodak.repository.ParticipantRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -106,31 +109,30 @@ public class ParticipantService {
     }
 
     @Transactional
-    public void removeParticipant(Long hostUserId, Long meetingId, Long participantId) {
-        // 1. 요청을 보낸 유저(hostUserId)가 해당 모임에 참여 중인지 조회
-        Participant host = participantRepository.findByMeetingIdAndUserId(meetingId, hostUserId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 모임의 참여자가 아닙니다."));
+    public void removeParticipant(Long userId, Long meetingId, Long participantId) {
+        // 1. 해당 모임이 존재하는지 확인
+        modak.modakmodak.entity.Meeting meeting = meetingRepository.findById(meetingId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모임입니다. ID: " + meetingId));
 
-        // 2. 방장이 맞는지 권한 확인
-        if (!host.isHost()) {
-            throw new IllegalStateException("참가자 삭제 권한이 없습니다. (방장만 가능)");
+        // 2. 요청자가 방장(Host)인지 권한 검사
+        if (!meeting.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("참가자 삭제 권한이 없습니다. 방장만 가능합니다.");
         }
 
-        // 3. 삭제하려는 대상 참가자(participantId) 조회
-        Participant targetParticipant = participantRepository.findById(participantId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 참가자입니다."));
+        // 3. 삭제할 참가자가 해당 모임에 속해 있는지 확인
+        modak.modakmodak.entity.Participant participant = participantRepository.findById(participantId)
+                .orElseThrow(() -> new IllegalArgumentException("참가 정보를 찾을 수 없습니다. ID: " + participantId));
 
-        // 4. 모임 아이디가 일치하는지 한 번 더 안전하게 체크
-        if (!targetParticipant.getMeeting().getId().equals(meetingId)) {
-            throw new IllegalArgumentException("해당 모임의 참가자가 아닙니다.");
+        if (!participant.getMeeting().getId().equals(meetingId)) {
+            throw new IllegalArgumentException("해당 모임에 속한 참가자가 아닙니다.");
         }
 
-        // 5. 방장 스스로를 강퇴하려고 하는지 체크 (방장은 강퇴 불가, 스스로 나가기/종료만 가능)
-        if (targetParticipant.getId().equals(host.getId())) {
-            throw new IllegalStateException("방장 자신은 삭제할 수 없습니다.");
+        // 4. 방장 본인은 삭제할 수 없음 (선택 사항)
+        if (participant.isHost()) { // getIsHost() 대신 isHost()로 수정
+            throw new IllegalArgumentException("방장 자신은 삭제할 수 없습니다.");
         }
 
-        // 6. 참가자 최종 삭제
-        participantRepository.delete(targetParticipant);
+        // 5. 삭제 실행
+        participantRepository.delete(participant);
     }
 }
