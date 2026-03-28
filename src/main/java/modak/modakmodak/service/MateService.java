@@ -141,4 +141,18 @@ public class MateService {
 
                 return new modak.modakmodak.dto.MateListResponse(mateDtos);
         }
+
+        @Transactional
+        public void deleteMate(Long userId, Long mateId) {
+                // 1. 메이트 관계(Mate)가 존재하는지 확인 후 삭제
+                modak.modakmodak.entity.Mate mate = mateRepository.findMateRelationship(userId, mateId)
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메이트 관계입니다."));
+                mateRepository.delete(mate);
+
+                // 2. 향후 재신청이 가능하도록 두 사람 사이의 모든 메이트 요청(MateRequest) 기록 완전 삭제
+                java.util.List<MateRequest> pastRequests = mateRequestRepository.findRequestsBetweenUsers(userId, mateId);
+                if (!pastRequests.isEmpty()) {
+                        mateRequestRepository.deleteAll(pastRequests);
+                }
+        }
 }

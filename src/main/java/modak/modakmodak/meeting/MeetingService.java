@@ -530,4 +530,6 @@ public class MeetingService {
                 // 5. 참가자 삭제
                 participantRepository.delete(participant);
         }
+
+
 }

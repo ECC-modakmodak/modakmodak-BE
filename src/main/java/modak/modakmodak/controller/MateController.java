@@ -9,6 +9,7 @@ import modak.modakmodak.service.MateService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 @Tag(name = "Mate", description = "메이트 관련 API")
 @RestController
@@ -51,5 +52,19 @@ public class MateController {
             @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId) {
         modak.modakmodak.dto.MateListResponse response = mateService.getMateList(userId);
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "메이트 삭제", description = "기존 메이트 관계를 끊고, 재신청이 가능하도록 관련 요청 기록도 모두 지웁니다.")
+    @DeleteMapping("/{mateId}")
+    public ResponseEntity<Map<String, Object>> deleteMate(
+            @RequestHeader(value = "X-User-Id") Long userId,
+            @PathVariable Long mateId) {
+
+        mateService.deleteMate(userId, mateId);
+
+        return ResponseEntity.ok(Map.of(
+                "status", 200,
+                "message", "메이트가 성공적으로 삭제되었으며, 이제 다시 친구 신청이 가능합니다."
+        ));
     }
 }
