@@ -23,7 +23,7 @@ import modak.modakmodak.entity.NotificationType;
 @RequiredArgsConstructor
 @Transactional
 public class MeetingService {
-        private final MateRepository.MeetingRepository meetingRepository;
+        private final modak.modakmodak.repository.MeetingRepository meetingRepository;
         private final modak.modakmodak.repository.ParticipantRepository participantRepository;
         private final modak.modakmodak.repository.UserRepository userRepository;
         private final modak.modakmodak.repository.NotificationRepository notificationRepository;
