@@ -65,5 +65,18 @@ public class ParticipantController {
                 "message", messageResult
         ));
     }
+
+    @Operation(summary = "참가자 삭제", description = "방장이 특정 참가자를 모임에서 삭제(강퇴)합니다.")
+    @DeleteMapping("/{meetingId}/participants/{participantId}")
+    public ResponseEntity<?> removeParticipant(
+            @PathVariable Long meetingId,
+            @PathVariable Long participantId,
+            @RequestHeader("X-User-Id") Long userId) {
+
+        // 방금 만든 서비스 로직 호출!
+        participantService.removeParticipant(userId, meetingId, participantId);
+
+        return ResponseEntity.ok("참가자가 성공적으로 삭제되었습니다.");
+    }
 }
 
