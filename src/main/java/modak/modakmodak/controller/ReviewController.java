@@ -8,7 +8,7 @@ import modak.modakmodak.dto.UserReviewResponse;
 import modak.modakmodak.entity.Meeting;
 import modak.modakmodak.entity.Review;
 import modak.modakmodak.entity.User;
-import modak.modakmodak.repository.MateRepository;
+import modak.modakmodak.repository.MeetingRepository;
 import modak.modakmodak.repository.ReviewRepository;
 import modak.modakmodak.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,7 @@ import java.util.List;
 public class ReviewController {
 
     private final ReviewRepository reviewRepository;
-    private final MateRepository.MeetingRepository meetingRepository;
+    private final MeetingRepository meetingRepository;
     private final UserRepository userRepository;
 
     @Operation(summary = "내 회고 목록 조회 (최신순)", description = "프로필 페이지에서 최신순으로 회고를 모아봅니다.")
