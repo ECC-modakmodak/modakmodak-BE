@@ -5,5 +5,6 @@ public enum NotificationType {
     MATE_REQUEST, // 메이트 요청
     MEETING_APPROVED, // 모임 승인
     MEETING_REJECTED, // 모임 거절
-    MEETING_APPLICATION // 모임 참여 신청
+    MEETING_APPLICATION, // 모임 참여 신청
+    POD_INVITE // 메이트 모임 참여 신청
 }

@@ -8,7 +8,7 @@ import modak.modakmodak.dto.UserReviewResponse;
 import modak.modakmodak.entity.Meeting;
 import modak.modakmodak.entity.Review;
 import modak.modakmodak.entity.User;
-import modak.modakmodak.meeting.MeetingRepository;
+import modak.modakmodak.repository.MeetingRepository;
 import modak.modakmodak.repository.ReviewRepository;
 import modak.modakmodak.repository.UserRepository;
 import org.springframework.http.ResponseEntity;

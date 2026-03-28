@@ -1,10 +1,11 @@
-package modak.modakmodak.meeting;
+package modak.modakmodak.service;
 
 import lombok.RequiredArgsConstructor;
 import modak.modakmodak.dto.MeetingDetailRequest;
 import modak.modakmodak.dto.MeetingSetupRequest;
 import modak.modakmodak.dto.MeetingDetailResponse;
 import modak.modakmodak.entity.Meeting;
+import modak.modakmodak.repository.MateRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -12,21 +13,17 @@ import modak.modakmodak.entity.User;
 import modak.modakmodak.entity.Participant;
 import modak.modakmodak.entity.ParticipationStatus;
 import java.util.stream.Collectors;
-import modak.modakmodak.dto.MeetingUpdateDetailRequest;
-import modak.modakmodak.dto.ParticipantGoalRequest;
-import java.util.List;
 import java.util.ArrayList;
-import modak.modakmodak.dto.HostAnnouncementUpdateRequest;
-import modak.modakmodak.dto.DateUpdateRequest;
-import modak.modakmodak.dto.LocationDetailUpdateRequest;
 import java.time.LocalDateTime;
-import modak.modakmodak.entity.MeetingPodCategory;
+import modak.modakmodak.entity.Notification;
+import modak.modakmodak.repository.NotificationRepository;
+import modak.modakmodak.entity.NotificationType;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class MeetingService {
-        private final MeetingRepository meetingRepository;
+        private final modak.modakmodak.repository.MeetingRepository meetingRepository;
         private final modak.modakmodak.repository.ParticipantRepository participantRepository;
         private final modak.modakmodak.repository.UserRepository userRepository;
         private final modak.modakmodak.repository.NotificationRepository notificationRepository;
@@ -55,6 +52,30 @@ public class MeetingService {
                                 .build();
                 participantRepository.save(host);
 
+                if (request.receiverIds() != null && !request.receiverIds().isEmpty()) {
+                        String inviteMessage = (request.message() != null && !request.message().isBlank())
+                                ? request.message()
+                                : "우리 같이 모닥모닥 팟에서 열공해요! 🔥";
+
+                        for (Long mateId : request.receiverIds()) {
+                                if (mateId.equals(userId)) continue;
+
+                                modak.modakmodak.entity.User mateUser = userRepository.findById(mateId)
+                                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메이트입니다. ID: " + mateId));
+
+                                // 알림 엔티티 생성
+                                Notification notification = Notification.builder()
+                                        .user(mateUser) // 알림을 받을 사람 (초대받은 메이트)
+                                        .type(modak.modakmodak.entity.NotificationType.POD_INVITE) // 알림 타입 (Enum에 맞게 수정 필요)
+                                        .title("팟 초대 알림")
+                                        .message(inviteMessage) // 사용자가 작성한 메시지
+                                        .relatedId(savedMeeting.getId()) // 나중에 수락할 때 어떤 팟인지 알아야 하므로 팟 ID 저장
+                                        .senderNickname(user.getNickname()) // 방장 닉네임
+                                        .build();
+
+                                notificationRepository.save(notification);
+                        }
+                }
                 return savedMeeting.getId();
         }
 

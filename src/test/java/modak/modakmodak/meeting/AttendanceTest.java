@@ -3,13 +3,13 @@ package modak.modakmodak.meeting;
 import modak.modakmodak.dto.AttendanceCheckRequest;
 import modak.modakmodak.dto.AttendanceCheckResponse;
 import modak.modakmodak.entity.Meeting;
-import modak.modakmodak.entity.MeetingAtmosphere;
-import modak.modakmodak.entity.MeetingCategory;
 import modak.modakmodak.entity.Participant;
 import modak.modakmodak.entity.ParticipationStatus;
 import modak.modakmodak.entity.User;
+import modak.modakmodak.repository.MateRepository;
 import modak.modakmodak.repository.ParticipantRepository;
 import modak.modakmodak.repository.UserRepository;
+import modak.modakmodak.service.MeetingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@ class AttendanceTest {
     private MeetingService meetingService;
 
     @Mock
-    private MeetingRepository meetingRepository;
+    private MateRepository.MeetingRepository meetingRepository;
     @Mock
     private ParticipantRepository participantRepository;
     @Mock
