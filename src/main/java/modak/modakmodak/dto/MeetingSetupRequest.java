@@ -13,5 +13,6 @@ public record MeetingSetupRequest(
         int maxParticipants,           // 최대 인원
 
         // [추가] 초대할 메이트들의 ID 리스트 (일반 팟 생성 시에는 비어있음)
-        List<Long> invitedMateIds
+        List<Long> receiverIds,
+        String message
 ) {}

@@ -46,5 +46,24 @@ public class ParticipantController {
                 "message", "모임에서 정상적으로 나갔습니다."
         ));
     }
+
+    @Operation(summary = "팟 초대 수락/거절", description = "알림을 통해 받은 팟 초대를 수락하거나 거절합니다.")
+    @PostMapping("/meetings/{meetingId}/invitations/reply")
+    public ResponseEntity<Map<String, Object>> replyToPodInvite(
+            @RequestHeader("X-User-Id") Long userId,
+            @PathVariable Long meetingId,
+            @RequestBody modak.modakmodak.dto.PodInviteReplyRequest request) {
+
+        participantService.replyToPodInvite(userId, meetingId, request);
+
+        String messageResult = "ACCEPTED".equals(request.status())
+                ? "팟 초대를 수락하여 모임에 참여했습니다."
+                : "팟 초대를 거절했습니다.";
+
+        return ResponseEntity.ok(Map.of(
+                "status", 200,
+                "message", messageResult
+        ));
+    }
 }
 

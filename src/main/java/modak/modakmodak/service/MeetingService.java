@@ -15,6 +15,9 @@ import modak.modakmodak.entity.ParticipationStatus;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.time.LocalDateTime;
+import modak.modakmodak.entity.Notification;
+import modak.modakmodak.repository.NotificationRepository;
+import modak.modakmodak.entity.NotificationType;
 
 @Service
 @RequiredArgsConstructor
@@ -49,25 +52,30 @@ public class MeetingService {
                                 .build();
                 participantRepository.save(host);
 
-                if (request.invitedMateIds() != null && !request.invitedMateIds().isEmpty()) {
-                        for (Long mateId : request.invitedMateIds()) {
-                                // 자기 자신을 초대하는 것은 건너뜀
+                if (request.receiverIds() != null && !request.receiverIds().isEmpty()) {
+                        String inviteMessage = (request.message() != null && !request.message().isBlank())
+                                ? request.message()
+                                : "우리 같이 모닥모닥 팟에서 열공해요! 🔥";
+
+                        for (Long mateId : request.receiverIds()) {
                                 if (mateId.equals(userId)) continue;
 
                                 modak.modakmodak.entity.User mateUser = userRepository.findById(mateId)
                                         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메이트입니다. ID: " + mateId));
 
-                                modak.modakmodak.entity.Participant invitedParticipant = modak.modakmodak.entity.Participant.builder()
-                                        .meeting(savedMeeting)
-                                        .user(mateUser)
-                                        .status(modak.modakmodak.entity.ParticipationStatus.PENDING) // 초대받은 상태 (승인 대기)
-                                        .isHost(false) // 방장이 아님
+                                // 알림 엔티티 생성
+                                Notification notification = Notification.builder()
+                                        .user(mateUser) // 알림을 받을 사람 (초대받은 메이트)
+                                        .type(modak.modakmodak.entity.NotificationType.POD_INVITE) // 알림 타입 (Enum에 맞게 수정 필요)
+                                        .title("팟 초대 알림")
+                                        .message(inviteMessage) // 사용자가 작성한 메시지
+                                        .relatedId(savedMeeting.getId()) // 나중에 수락할 때 어떤 팟인지 알아야 하므로 팟 ID 저장
+                                        .senderNickname(user.getNickname()) // 방장 닉네임
                                         .build();
 
-                                participantRepository.save(invitedParticipant);
+                                notificationRepository.save(notification);
                         }
                 }
-
                 return savedMeeting.getId();
         }
 
