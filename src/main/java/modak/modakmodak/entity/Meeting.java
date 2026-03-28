@@ -8,6 +8,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import modak.modakmodak.entity.MeetingAtmosphere;
 import modak.modakmodak.entity.MeetingCategory;
+import modak.modakmodak.entity.MeetingPodCategory;
 
 @Entity
 @Getter
@@ -54,6 +55,9 @@ public class Meeting {
 
     private String status; // PENDING(대기), OPEN(개설완료)
 
+    @Enumerated(EnumType.STRING)
+    private MeetingPodCategory podCategory;
+
     // 세부 정보 업데이트 메서드
     public void updateDetails(MeetingDetailRequest request) {
         this.title = request.title();
@@ -75,6 +79,9 @@ public class Meeting {
         }
         if (request.category() != null) {
             this.category = request.category();
+        }
+        if (request.podCategory() != null) {
+            this.podCategory = request.podCategory();
         }
         if (request.categoryEtc() != null) {
             this.categoryEtc = request.categoryEtc();
