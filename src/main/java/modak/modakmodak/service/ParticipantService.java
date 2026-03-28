@@ -9,6 +9,7 @@ import modak.modakmodak.entity.ReactionEmoji;
 import modak.modakmodak.repository.ParticipantRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
 
 import java.util.Optional;
 
@@ -46,5 +47,25 @@ public class ParticipantService {
             throw new IllegalStateException("본인의 목표만 수정할 수 있습니다.");
         }
         participant.updateGoal(request.goal());
+    }
+
+    public void leaveMeeting(Long userId, Long meetingId) {
+        // 1. 참여 정보 조회
+        Participant participant = participantRepository.findByMeetingIdAndUserId(meetingId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 모임에 참여하고 있지 않습니다."));
+
+        // 2. 방장 여부 확인 (방장은 나갈 수 없음)
+        if (participant.isHost()) {
+            throw new IllegalStateException("방장은 모임에서 나갈 수 없습니다. 모임을 종료하거나 삭제해야 합니다.");
+        }
+
+        // 3. 시간 제한 확인 (현재 시간이 모임 시작 시간보다 이전이어야 함)
+        LocalDateTime meetingTime = participant.getMeeting().getDate();
+        if (meetingTime != null && LocalDateTime.now().isAfter(meetingTime)) {
+            throw new IllegalStateException("이미 시작된 모임에서는 나갈 수 없습니다.");
+        }
+
+        // 4. 참여 정보 삭제 (모임 나가기)
+        participantRepository.delete(participant);
     }
 }

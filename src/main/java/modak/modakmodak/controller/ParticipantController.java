@@ -7,6 +7,7 @@ import modak.modakmodak.meeting.MeetingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import modak.modakmodak.service.ParticipantService;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/participants")
@@ -31,6 +32,20 @@ public class ParticipantController {
             @RequestBody ParticipantGoalRequest request) {
 
         participantService.updateParticipantGoal(userId, participantId, request);        return ResponseEntity.ok("팟 목표가 수정되었습니다.");
+    }
+
+    @Operation(summary = "모임 나가기", description = "일반 참여자가 모임 시작 전까지 모임에서 나갑니다. (방장 불가)")
+    @DeleteMapping("/meetings/{meetingId}/leave")
+    public ResponseEntity<Map<String, Object>> leaveMeeting(
+            @RequestHeader("X-User-Id") Long userId,
+            @PathVariable Long meetingId) {
+
+        participantService.leaveMeeting(userId, meetingId);
+
+        return ResponseEntity.ok(Map.of(
+                "status", 200,
+                "message", "모임에서 정상적으로 나갔습니다."
+        ));
     }
 }
 
