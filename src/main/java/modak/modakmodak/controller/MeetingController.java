@@ -13,6 +13,7 @@ import modak.modakmodak.dto.HostAnnouncementUpdateRequest;
 import modak.modakmodak.dto.DateUpdateRequest;
 import modak.modakmodak.dto.LocationDetailUpdateRequest;
 import modak.modakmodak.service.ParticipantService;
+import jakarta.validation.Valid;
 
 @Tag(name = "Meeting", description = "모임 개설 API")
 @RestController
@@ -26,7 +27,7 @@ public class MeetingController {
     @PostMapping("/setup")
     public ResponseEntity<Long> setup(
             @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
-            @RequestBody MeetingSetupRequest request) {
+            @Valid @RequestBody MeetingSetupRequest request) {
         return ResponseEntity.ok(meetingService.setupMeeting(userId, request));
     }
 
