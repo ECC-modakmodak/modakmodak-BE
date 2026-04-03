@@ -27,6 +27,7 @@ public class MeetingService {
         private final modak.modakmodak.repository.ParticipantRepository participantRepository;
         private final modak.modakmodak.repository.UserRepository userRepository;
         private final modak.modakmodak.repository.NotificationRepository notificationRepository;
+        private final modak.modakmodak.repository.ChatMessageRepository chatMessageRepository;
 
         public Long setupMeeting(Long userId, MeetingSetupRequest request) {
                 modak.modakmodak.entity.User user = userRepository.findById(userId)
@@ -415,6 +416,8 @@ public class MeetingService {
 
                 // 4. 팟 종료 처리
                 meeting.completeMeeting();
+
+                chatMessageRepository.deleteAllByMeetingId(meetingId);
 
                 return new modak.modakmodak.dto.MeetingCompleteResponse(
                                 200,
