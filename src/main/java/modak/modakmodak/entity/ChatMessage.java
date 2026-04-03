@@ -24,6 +24,8 @@ public class ChatMessage {
     private Long senderId; //보낸 사람 id
     private String senderNickname; //보낸 사람 닉네임
 
+    private String senderProfileImageUrl;
+
     private boolean isHost;
 
     @Column(columnDefinition = "TEXT")
