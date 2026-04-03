@@ -26,19 +26,25 @@ public class ChatController {
                 .meetingId(messageDto.meetingId())
                 .senderId(messageDto.senderId())
                 .senderNickname(messageDto.senderNickname())
+                .senderProfileImageUrl(messageDto.senderProfileImageUrl())
                 .isHost(messageDto.isHost())
                 .message(messageDto.message())
                 .build();
         chatMessageRepository.save(chatMessage);
+
+        // createdAt 보정 로직 (save 직후 null인 경우 현재 시간 주입)
+        LocalDateTime responseTime = chatMessage.getCreatedAt() != null ?
+                chatMessage.getCreatedAt() : LocalDateTime.now();
 
         // 2. 해당 팟(/sub/chat/room/{meetingId})을 구독 중인 사람들에게 메시지 전달
         ChatMessageDto responseDto = new ChatMessageDto(
                 chatMessage.getMeetingId(),
                 chatMessage.getSenderId(),
                 chatMessage.getSenderNickname(),
+                chatMessage.getSenderProfileImageUrl(),
                 chatMessage.isHost(),
                 chatMessage.getMessage(),
-                chatMessage.getCreatedAt() != null ? chatMessage.getCreatedAt() : LocalDateTime.now()
+                responseTime
         );
 
         messagingTemplate.convertAndSend("/sub/chat/room/" + messageDto.meetingId(), responseDto);
