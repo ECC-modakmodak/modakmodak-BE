@@ -52,7 +52,21 @@ public class ChatController {
 
     // (옵션) 팟에 처음 들어갔을 때 이전 채팅 내역 불러오기 API
     @GetMapping("/api/meetings/{meetingId}/chats")
-    public List<ChatMessage> getChatHistory(@PathVariable Long meetingId) {
-        return chatMessageRepository.findAllByMeetingIdOrderByCreatedAtAsc(meetingId);
+    public List<ChatMessageDto> getChatHistory(@PathVariable Long meetingId) {
+        // 1. 엔티티 리스트를 가져옴
+        List<ChatMessage> chatMessages = chatMessageRepository.findAllByMeetingIdOrderByCreatedAtAsc(meetingId);
+
+        // 2. 엔티티를 DTO로 변환하여 반환 (출력 형식을 DTO와 동일하게 고정)
+        return chatMessages.stream()
+                .map(chat -> new ChatMessageDto(
+                        chat.getMeetingId(),
+                        chat.getSenderId(),
+                        chat.getSenderNickname(),
+                        chat.getSenderProfileImageUrl(),
+                        chat.isHost(),
+                        chat.getMessage(),
+                        chat.getCreatedAt()
+                ))
+                .toList();
     }
 }
