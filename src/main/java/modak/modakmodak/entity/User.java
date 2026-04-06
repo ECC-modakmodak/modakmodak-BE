@@ -35,6 +35,15 @@ public class User {
     @Enumerated(EnumType.STRING)
     private MeetingMethod preferredMethod;
 
+    @Enumerated(EnumType.STRING)
+    private PreferredDay preferredDay;
+
+    @Enumerated(EnumType.STRING)
+    private PreferredTime preferredTime;
+
+    @Enumerated(EnumType.STRING)
+    private StudyCategory studyCategory;
+
     @Builder.Default
     private float attendanceRate = 0;
 
@@ -57,5 +66,8 @@ public class User {
         if (request.targetMessage() != null) this.targetMessage = request.targetMessage();
         if (request.preferredType() != null) this.preferredType = request.preferredType();
         if (request.activityArea() != null) this.activityArea = request.activityArea();
+        if (request.preferredDay() != null) this.preferredDay = request.preferredDay();
+        if (request.preferredTime() != null) this.preferredTime = request.preferredTime();
+        if (request.studyCategory() != null) this.studyCategory = request.studyCategory();
     }
 }

@@ -42,6 +42,13 @@ public class UserController {
                 .password(request.password())
                 .email(request.email())
                 .nickname(request.nickname())
+                .preferredType(request.preferredType())
+                .preferredMethod(request.preferredMethod())
+                .preferredDay(request.preferredDay())
+                .preferredTime(request.preferredTime())
+                .studyCategory(request.studyCategory())
+                .activityArea(request.activityArea())
+                .targetMessage(request.targetMessage())
                 .attendanceRate(0) // 초기값 설정
                 .build();
 
@@ -179,16 +186,19 @@ public class UserController {
             User user = userOptional.get();
 
             // 2. 시안 명세서에 맞는 보따리(Map)를 만들어 데이터를 채웁니다.
-            Map<String, Object> data = Map.of(
-                    "userId", user.getUsername(),
-                    "nickname", user.getNickname(),
-                    "email", user.getEmail(),
-                    "profileImage", user.getProfileImage() != null ? user.getProfileImage() : "https://...",
-                    "attendanceRate", user.getAttendanceRate(),
-                    "targetMessage", user.getTargetMessage() != null ? user.getTargetMessage() : "",
-                    "preferredType", user.getPreferredType() != null ? user.getPreferredType() : "",
-                    "activityArea", user.getActivityArea() != null ? user.getActivityArea() : ""
-            );
+            java.util.Map<String, Object> data = new java.util.HashMap<>();
+            data.put("userId", user.getUsername());
+            data.put("nickname", user.getNickname());
+            data.put("email", user.getEmail());
+            data.put("profileImage", user.getProfileImage() != null ? user.getProfileImage() : "https://...");
+            data.put("attendanceRate", user.getAttendanceRate());
+            data.put("targetMessage", user.getTargetMessage() != null ? user.getTargetMessage() : "");
+            data.put("preferredType", user.getPreferredType() != null ? user.getPreferredType() : "");
+            data.put("preferredMethod", user.getPreferredMethod() != null ? user.getPreferredMethod() : "");
+            data.put("activityArea", user.getActivityArea() != null ? user.getActivityArea() : "");
+            data.put("preferredDay", user.getPreferredDay() != null ? user.getPreferredDay() : "");
+            data.put("preferredTime", user.getPreferredTime() != null ? user.getPreferredTime() : "");
+            data.put("studyCategory", user.getStudyCategory() != null ? user.getStudyCategory() : "");
 
             return ResponseEntity.ok(Map.of(
                     "status", 200,
