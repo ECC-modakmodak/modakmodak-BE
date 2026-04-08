@@ -3,6 +3,9 @@ package modak.modakmodak.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import modak.modakmodak.entity.MeetingAtmosphere;
 import modak.modakmodak.entity.MeetingMethod;
+import modak.modakmodak.entity.PreferredDay;
+import modak.modakmodak.entity.PreferredTime;
+import modak.modakmodak.entity.StudyCategory;
 
 @Schema(description = "회원가입 요청 정보")
 public record UserJoinRequest(
@@ -18,6 +21,17 @@ public record UserJoinRequest(
 
                 @Schema(description = "선호 방식", example = "대면") MeetingMethod preferredMethod, // 대면, 비대면
 
+        @Schema(description = "선호 요일", example = "WEEKDAY")
+        PreferredDay preferredDay,       // 평일, 주말
+
+        @Schema(description = "선호 시간대", example = "MORNING")
+        PreferredTime preferredTime,     // 오전, 오후, 밤
+
+        @Schema(description = "공부 분야", example = "PROGRAMMING")
+        StudyCategory studyCategory,     // 파이썬, 어학 등
+
+        @Schema(description = "주요 활동 지역", example = "서울시 서대문구")
+        String activityArea,             //
                 @Schema(description = "주요 활동 지역", example = "서울시 서대문구") String activityArea, //
 
                 @Schema(description = "나의 목표", example = "웹 개발 정복하기!") String targetMessage //

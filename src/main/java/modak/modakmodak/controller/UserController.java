@@ -45,6 +45,24 @@ public class UserController {
             return ResponseEntity.badRequest().body("이미 사용 중인 닉네임입니다.");
         }
 
+        // DTO 데이터를 엔티티로 변환하여 저장
+        User user = User.builder()
+                .username(request.username())
+                .password(request.password())
+                .email(request.email())
+                .nickname(request.nickname())
+                .preferredType(request.preferredType())
+                .preferredMethod(request.preferredMethod())
+                .preferredDay(request.preferredDay())
+                .preferredTime(request.preferredTime())
+                .studyCategory(request.studyCategory())
+                .activityArea(request.activityArea())
+                .targetMessage(request.targetMessage())
+                .attendanceRate(0) // 초기값 설정
+                .build();
+
+        userRepository.save(user);
+        return ResponseEntity.ok("회원가입 성공!");
         // 서비스의 join 로직을 사용하면 사진 로직까지 한 번에 처리됩니다.
         Long savedUserId = userService.join(request);
         return ResponseEntity.ok("회원가입 성공! ID:" + savedUserId);
@@ -199,6 +217,19 @@ public class UserController {
             User user = userOptional.get();
 
             // 2. 시안 명세서에 맞는 보따리(Map)를 만들어 데이터를 채웁니다.
+            java.util.Map<String, Object> data = new java.util.HashMap<>();
+            data.put("userId", user.getUsername());
+            data.put("nickname", user.getNickname());
+            data.put("email", user.getEmail());
+            data.put("profileImage", user.getProfileImage() != null ? user.getProfileImage() : "https://...");
+            data.put("attendanceRate", user.getAttendanceRate());
+            data.put("targetMessage", user.getTargetMessage() != null ? user.getTargetMessage() : "");
+            data.put("preferredType", user.getPreferredType() != null ? user.getPreferredType() : "");
+            data.put("preferredMethod", user.getPreferredMethod() != null ? user.getPreferredMethod() : "");
+            data.put("activityArea", user.getActivityArea() != null ? user.getActivityArea() : "");
+            data.put("preferredDay", user.getPreferredDay() != null ? user.getPreferredDay() : "");
+            data.put("preferredTime", user.getPreferredTime() != null ? user.getPreferredTime() : "");
+            data.put("studyCategory", user.getStudyCategory() != null ? user.getStudyCategory() : "");
             Map<String, Object> data = new HashMap<>(); // ◀ Map.of 대신 HashMap 사용 추천
 
             data.put("id", user.getId()); // ◀ [추가] 모임 생성(X-User-Id)에 꼭 필요한 숫자 ID!

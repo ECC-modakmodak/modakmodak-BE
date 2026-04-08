@@ -44,6 +44,15 @@ public class User {
     @Column(name = "preferred_method")
     private MeetingMethod preferredMethod;
 
+    @Enumerated(EnumType.STRING)
+    private PreferredDay preferredDay;
+
+    @Enumerated(EnumType.STRING)
+    private PreferredTime preferredTime;
+
+    @Enumerated(EnumType.STRING)
+    private StudyCategory studyCategory;
+
     @Builder.Default
     @Column(name = "attendance_rate", nullable = false)
     private Float attendanceRate = 0.0f;
@@ -60,6 +69,15 @@ public class User {
     }
 
     public void updateProfile(UserProfileRequest request) {
+        if (request.nickname() != null) this.nickname = request.nickname();
+        if (request.email() != null) this.email = request.email();
+        if (request.profileImage() != null) this.profileImage = request.profileImage();
+        if (request.targetMessage() != null) this.targetMessage = request.targetMessage();
+        if (request.preferredType() != null) this.preferredType = request.preferredType();
+        if (request.activityArea() != null) this.activityArea = request.activityArea();
+        if (request.preferredDay() != null) this.preferredDay = request.preferredDay();
+        if (request.preferredTime() != null) this.preferredTime = request.preferredTime();
+        if (request.studyCategory() != null) this.studyCategory = request.studyCategory();
         if (request.nickname() != null)
             this.nickname = request.nickname();
         if (request.email() != null)
