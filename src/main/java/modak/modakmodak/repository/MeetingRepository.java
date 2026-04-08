@@ -1,4 +1,4 @@
-package modak.modakmodak.meeting;
+package modak.modakmodak.repository;
 
 import modak.modakmodak.entity.Meeting;
 import org.springframework.data.jpa.repository.JpaRepository;

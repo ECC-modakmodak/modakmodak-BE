@@ -2,10 +2,19 @@ package modak.modakmodak.dto;
 
 import modak.modakmodak.entity.MeetingAtmosphere;
 import modak.modakmodak.entity.MeetingCategory;
+import modak.modakmodak.entity.MeetingPodCategory;
+import java.util.List;
+import jakarta.validation.constraints.NotNull;
 
 public record MeetingSetupRequest(
         MeetingAtmosphere atmosphere, // 도란도란 vs 조용한
         MeetingCategory category,     // 카공 vs 줌공 vs 기타
+        @NotNull(message = "팟 카테고리를 반드시 선택해주세요.")
+        MeetingPodCategory podCategory, // 추가: 시험대비, 과제팀플 등
         String categoryEtc,           // "기타" 선택 시 사용자가 직접 쓴 글자
-        int maxParticipants           // 최대 인원
+        int maxParticipants,           // 최대 인원
+
+        // [추가] 초대할 메이트들의 ID 리스트 (일반 팟 생성 시에는 비어있음)
+        List<Long> receiverIds,
+        String message
 ) {}

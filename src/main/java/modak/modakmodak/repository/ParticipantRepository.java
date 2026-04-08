@@ -3,6 +3,7 @@ package modak.modakmodak.repository;
 import modak.modakmodak.entity.Participant;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
+import java.util.Optional;
 
 public interface ParticipantRepository extends JpaRepository<Participant, Long> {
     // 특정 모임에 참여 중인 사람들을 모두 가져오는 메서드
@@ -16,4 +17,16 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
 
     // 중복 신청 여부 확인
     boolean existsByMeetingIdAndUserId(Long meetingId, Long userId);
+
+    // 승인된 참여자 수
+    int countByMeetingIdAndStatus(Long meetingId, modak.modakmodak.entity.ParticipationStatus status);
+
+    // [New] 특정 유저의 승인된 참여 총 횟수
+    int countByUserIdAndStatus(Long userId, modak.modakmodak.entity.ParticipationStatus status);
+
+    // [New] 특정 유저의 승인된 참여 중 출석한 횟수
+    int countByUserIdAndStatusAndAttendedTrue(Long userId, modak.modakmodak.entity.ParticipationStatus status);
+
+    // [추가] 특정 모임에서 특정 유저의 참여 정보 찾기
+    Optional<Participant> findByMeetingIdAndUserId(Long meetingId, Long userId);
 }

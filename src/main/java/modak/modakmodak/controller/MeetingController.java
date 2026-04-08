@@ -6,9 +6,14 @@ import lombok.RequiredArgsConstructor;
 import modak.modakmodak.dto.MeetingDetailRequest;
 import modak.modakmodak.dto.MeetingSetupRequest;
 import modak.modakmodak.dto.MeetingDetailResponse;
-import modak.modakmodak.meeting.MeetingService;
+import modak.modakmodak.service.MeetingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import modak.modakmodak.dto.HostAnnouncementUpdateRequest;
+import modak.modakmodak.dto.DateUpdateRequest;
+import modak.modakmodak.dto.LocationDetailUpdateRequest;
+import modak.modakmodak.service.ParticipantService;
+import jakarta.validation.Valid;
 
 @Tag(name = "Meeting", description = "모임 개설 API")
 @RestController
@@ -16,12 +21,13 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class MeetingController {
     private final MeetingService meetingService;
+    private final ParticipantService participantService;
 
     @Operation(summary = "모임 초기 성격 설정", description = "1단계: 분위기, 카테고리, 인원을 설정합니다.")
     @PostMapping("/setup")
     public ResponseEntity<Long> setup(
             @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
-            @RequestBody MeetingSetupRequest request) {
+            @Valid @RequestBody MeetingSetupRequest request) {
         return ResponseEntity.ok(meetingService.setupMeeting(userId, request));
     }
 
@@ -49,8 +55,9 @@ public class MeetingController {
 
     @Operation(summary = "모임 목록 조회", description = "메인 화면에서 모임 목록을 조회합니다.")
     @GetMapping
-    public ResponseEntity<modak.modakmodak.dto.MeetingListResponse> getMeetingList() {
-        return ResponseEntity.ok(meetingService.getMeetingList());
+    public ResponseEntity<modak.modakmodak.dto.MeetingListResponse> getMeetingList(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId) {
+        return ResponseEntity.ok(meetingService.getMeetingList(userId));
     }
 
     @Operation(summary = "모임 참여 신청", description = "특정 모임에 참여를 신청합니다.")
@@ -72,12 +79,64 @@ public class MeetingController {
         return ResponseEntity.ok(meetingService.approveApplication(userId, meetingId, applicationId, request));
     }
 
-    @Operation(summary = "모임방 상태 업데이트", description = "참여자가 자신의 상태 배지(예: 집중하고 있어요)를 변경합니다.")
-    @PatchMapping("/{meetingId}/status")
-    public ResponseEntity<modak.modakmodak.dto.MeetingStatusUpdateResponse> updateMeetingStatus(
+    @Operation(summary = "팟 종료", description = "방장이 팟을 종료합니다.")
+    @PatchMapping("/{meetingId}/complete")
+    public ResponseEntity<modak.modakmodak.dto.MeetingCompleteResponse> completeMeeting(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+            @PathVariable Long meetingId) {
+        return ResponseEntity.ok(meetingService.completeMeetingByHost(userId, meetingId));
+    }
+
+    @Operation(summary = "출석 체크", description = "팟장이 참여자의 출석 여부를 체크합니다.")
+    @PatchMapping("/{meetingId}/attendance")
+    public ResponseEntity<modak.modakmodak.dto.AttendanceCheckResponse> checkAttendance(
             @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
             @PathVariable Long meetingId,
-            @RequestBody modak.modakmodak.dto.MeetingStatusUpdateRequest request) {
-        return ResponseEntity.ok(meetingService.updateMeetingStatus(userId, meetingId, request));
+            @RequestBody modak.modakmodak.dto.AttendanceCheckRequest request) {
+        return ResponseEntity.ok(meetingService.checkAttendance(userId, meetingId, request));
+    }
+
+    // 공지사항만 수정
+    @Operation(summary = "모임 공지사항 수정", description = "방장이 모임의 공지사항을 수정합니다.")
+    @PatchMapping("/{meetingId}/host-announcement")
+    public ResponseEntity<String> updateHostAnnouncement(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+            @PathVariable Long meetingId,
+            @RequestBody HostAnnouncementUpdateRequest request) {
+        meetingService.updateHostAnnouncement(userId, meetingId, request.hostAnnouncement());
+        return ResponseEntity.ok("공지사항이 성공적으로 수정되었습니다.");
+    }
+
+    // 모임 날짜만 수정
+    @Operation(summary = "모임 날짜 수정", description = "방장이 모임의 날짜와 시간을 수정합니다.")
+    @PatchMapping("/{meetingId}/date")
+    public ResponseEntity<String> updateDate(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+            @PathVariable Long meetingId,
+            @RequestBody DateUpdateRequest request) {
+        meetingService.updateDate(userId, meetingId, request.date());
+        return ResponseEntity.ok("모임 날짜가 성공적으로 수정되었습니다.");
+    }
+
+    // 상세 장소만 수정
+    @Operation(summary = "모임 상세장소 수정", description = "방장이 모임의 상세 장소를 수정합니다.")
+    @PatchMapping("/{meetingId}/location-detail")
+    public ResponseEntity<String> updateLocationDetail(
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+            @PathVariable Long meetingId,
+            @RequestBody LocationDetailUpdateRequest request) {
+        meetingService.updateLocationDetail(userId, meetingId, request.locationDetail());
+        return ResponseEntity.ok("상세 장소가 성공적으로 수정되었습니다.");
+    }
+
+    @Operation(summary = "참가자 삭제", description = "방장이 특정 참가자를 모임에서 강퇴(삭제)합니다.")
+    @DeleteMapping("/{meetingId}/participants/{participantId}")
+    public ResponseEntity<String> removeParticipant(
+            @PathVariable Long meetingId,
+            @PathVariable Long participantId,
+            @RequestHeader("X-User-Id") Long userId) {
+
+        participantService.removeParticipant(userId, meetingId, participantId);
+        return ResponseEntity.ok("참가자가 성공적으로 삭제되었습니다.");
     }
 }

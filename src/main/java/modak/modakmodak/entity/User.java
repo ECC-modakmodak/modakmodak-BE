@@ -19,20 +19,29 @@ public class User {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @Column(nullable = false)
+    @Column(nullable = true) // OAuth 사용자는 비밀번호 없음
     private String password;
 
     @Column(unique = true, nullable = false)
     private String email;
+
+    @Column(length = 20)
+    @Builder.Default
+    private String provider = "LOCAL"; // "LOCAL" 또는 "GOOGLE"
+
+    @Column(length = 255)
+    private String providerId; // OAuth 제공자의 고유 사용자 ID
 
     private String nickname;
     private String profileImage;
     private String activityArea;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "preferred_type")
     private MeetingAtmosphere preferredType;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "preferred_method")
     private MeetingMethod preferredMethod;
 
     @Enumerated(EnumType.STRING)
@@ -45,11 +54,11 @@ public class User {
     private StudyCategory studyCategory;
 
     @Builder.Default
-    private float attendanceRate = 0;
+    @Column(name = "attendance_rate", nullable = false)
+    private Float attendanceRate = 0.0f;
 
     private String statusMessage;
     private String targetMessage;
-
 
     // 회원가입 전용 생성자
     public User(String username, String password, String email, String nickname) {
@@ -69,5 +78,15 @@ public class User {
         if (request.preferredDay() != null) this.preferredDay = request.preferredDay();
         if (request.preferredTime() != null) this.preferredTime = request.preferredTime();
         if (request.studyCategory() != null) this.studyCategory = request.studyCategory();
+        if (request.nickname() != null)
+            this.nickname = request.nickname();
+        if (request.email() != null)
+            this.email = request.email();
+        if (request.profileImage() != null)
+            this.profileImage = request.profileImage();
+        if (request.targetMessage() != null)
+            this.targetMessage = request.targetMessage();
+        if (request.activityArea() != null)
+            this.activityArea = request.activityArea();
     }
 }
