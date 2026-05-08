@@ -31,8 +31,7 @@ public record UserJoinRequest(
         StudyCategory studyCategory,     // 파이썬, 어학 등
 
         @Schema(description = "주요 활동 지역", example = "서울시 서대문구")
-        String activityArea,             //
-                @Schema(description = "주요 활동 지역", example = "서울시 서대문구") String activityArea, //
+        String activityArea,
 
                 @Schema(description = "나의 목표", example = "웹 개발 정복하기!") String targetMessage //
 ) {

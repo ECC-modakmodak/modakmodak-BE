@@ -73,20 +73,9 @@ public class User {
         if (request.email() != null) this.email = request.email();
         if (request.profileImage() != null) this.profileImage = request.profileImage();
         if (request.targetMessage() != null) this.targetMessage = request.targetMessage();
-        if (request.preferredType() != null) this.preferredType = request.preferredType();
         if (request.activityArea() != null) this.activityArea = request.activityArea();
         if (request.preferredDay() != null) this.preferredDay = request.preferredDay();
         if (request.preferredTime() != null) this.preferredTime = request.preferredTime();
         if (request.studyCategory() != null) this.studyCategory = request.studyCategory();
-        if (request.nickname() != null)
-            this.nickname = request.nickname();
-        if (request.email() != null)
-            this.email = request.email();
-        if (request.profileImage() != null)
-            this.profileImage = request.profileImage();
-        if (request.targetMessage() != null)
-            this.targetMessage = request.targetMessage();
-        if (request.activityArea() != null)
-            this.activityArea = request.activityArea();
     }
 }

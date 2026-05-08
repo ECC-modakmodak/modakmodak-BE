@@ -91,6 +91,7 @@ class MeetingServiceTest {
                                 "Announcement",
                                 null, // Atmosphere (should remain CHATTY)
                                 null, // Category (should remain CAFE)
+                                null, // PodCategory
                                 null, // CategoryEtc (should remain "기타")
                                 0 // MaxParticipants (should remain 4)
                 );

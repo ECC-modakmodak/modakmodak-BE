@@ -78,6 +78,7 @@ class MeetingControllerTest {
                 "Announce",
                 null, // atmosphere
                 null, // category
+                null, // podCategory
                 null, // categoryEtc
                 0 // maxParticipants
         );
