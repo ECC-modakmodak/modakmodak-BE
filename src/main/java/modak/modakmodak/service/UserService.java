@@ -113,7 +113,9 @@ public class UserService {
                             .username(user.getUsername())
                             .email(user.getEmail())
                             .nickname(user.getNickname())
-                            .profileImage("profile_default.png")
+                            .profileImage(user.getProfileImage() != null
+                                    ? user.getProfileImage()
+                                    : "profile_default.png")
                             .provider(user.getProvider())
                             .build())
                     .build();

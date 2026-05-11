@@ -7,7 +7,7 @@ import modak.modakmodak.repository.ChatMessageRepository;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.web.bind.annotation.*;
-
+import modak.modakmodak.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,16 +17,24 @@ public class ChatController {
 
     private final SimpMessageSendingOperations messagingTemplate;
     private final ChatMessageRepository chatMessageRepository;
+    private final UserRepository userRepository;
+
 
     // 프론트엔드에서 /pub/chat/message 로 메시지를 발행하면 이 메서드가 실행됨
     @MessageMapping("/chat/message")
     public void message(ChatMessageDto messageDto) {
+        // senderId로 유저 조회 후 profileImage 가져오기
+        String profileImageUrl = userRepository.findById(messageDto.senderId())
+                .map(user -> user.getProfileImage() != null
+                        ? user.getProfileImage()
+                        : "profile_default.png")
+                .orElse("profile_default.png");
         // 1. DB에 메시지 저장
         ChatMessage chatMessage = ChatMessage.builder()
                 .meetingId(messageDto.meetingId())
                 .senderId(messageDto.senderId())
                 .senderNickname(messageDto.senderNickname())
-                .senderProfileImageUrl(messageDto.senderProfileImageUrl())
+                .senderProfileImageUrl(profileImageUrl)
                 .isHost(messageDto.isHost())
                 .message(messageDto.message())
                 .build();
@@ -56,17 +64,25 @@ public class ChatController {
         // 1. 엔티티 리스트를 가져옴
         List<ChatMessage> chatMessages = chatMessageRepository.findAllByMeetingIdOrderByCreatedAtAsc(meetingId);
 
-        // 2. 엔티티를 DTO로 변환하여 반환 (출력 형식을 DTO와 동일하게 고정)
+        // 2. 엔티티를 DTO로 변환하여 반환
         return chatMessages.stream()
-                .map(chat -> new ChatMessageDto(
-                        chat.getMeetingId(),
-                        chat.getSenderId(),
-                        chat.getSenderNickname(),
-                        chat.getSenderProfileImageUrl(),
-                        chat.isHost(),
-                        chat.getMessage(),
-                        chat.getCreatedAt()
-                ))
+                .map(chat -> {
+                    String profileImageUrl = userRepository.findById(chat.getSenderId())
+                            .map(user -> user.getProfileImage() != null
+                                    ? user.getProfileImage()
+                                    : "profile_default.png")
+                            .orElse("profile_default.png");
+
+                    return new ChatMessageDto(
+                            chat.getMeetingId(),
+                            chat.getSenderId(),
+                            chat.getSenderNickname(),
+                            profileImageUrl, // ← DB에 저장된 값 대신 유저 조회값 사용
+                            chat.isHost(),
+                            chat.getMessage(),
+                            chat.getCreatedAt()
+                    );
+                })
                 .toList();
     }
 }
