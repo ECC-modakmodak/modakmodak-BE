@@ -64,17 +64,25 @@ public class ChatController {
         // 1. 엔티티 리스트를 가져옴
         List<ChatMessage> chatMessages = chatMessageRepository.findAllByMeetingIdOrderByCreatedAtAsc(meetingId);
 
-        // 2. 엔티티를 DTO로 변환하여 반환 (출력 형식을 DTO와 동일하게 고정)
+        // 2. 엔티티를 DTO로 변환하여 반환
         return chatMessages.stream()
-                .map(chat -> new ChatMessageDto(
-                        chat.getMeetingId(),
-                        chat.getSenderId(),
-                        chat.getSenderNickname(),
-                        chat.getSenderProfileImageUrl(),
-                        chat.isHost(),
-                        chat.getMessage(),
-                        chat.getCreatedAt()
-                ))
+                .map(chat -> {
+                    String profileImageUrl = userRepository.findById(chat.getSenderId())
+                            .map(user -> user.getProfileImage() != null
+                                    ? user.getProfileImage()
+                                    : "profile_default.png")
+                            .orElse("profile_default.png");
+
+                    return new ChatMessageDto(
+                            chat.getMeetingId(),
+                            chat.getSenderId(),
+                            chat.getSenderNickname(),
+                            profileImageUrl, // ← DB에 저장된 값 대신 유저 조회값 사용
+                            chat.isHost(),
+                            chat.getMessage(),
+                            chat.getCreatedAt()
+                    );
+                })
                 .toList();
     }
 }
